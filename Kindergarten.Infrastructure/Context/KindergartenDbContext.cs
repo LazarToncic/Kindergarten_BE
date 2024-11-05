@@ -20,4 +20,6 @@ public class KindergartenDbContext(DbContextOptions<KindergartenDbContext> optio
     {
         optionsBuilder.UseNpgsql("Host=localhost;Username=postgres;Password=root;Database=Kindergarten");
     }
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 }

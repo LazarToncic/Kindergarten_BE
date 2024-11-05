@@ -1,5 +1,10 @@
+using Kindergarten.Application.Common.Interfaces;
+using Kindergarten.Domain.Entities;
 using Kindergarten.Infrastructure.Configuration;
 using Kindergarten.Infrastructure.Context;
+using Kindergarten.Infrastructure.Identity;
+using Kindergarten.Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +21,17 @@ public static class DependencyInjection
             services.AddDbContext<KindergartenDbContext>(options =>
                 options.UseNpgsql(dbConfiguration.ConnectionString(),
                     x => x.MigrationsAssembly(typeof(KindergartenDbContext).Assembly.FullName)));  
+        
+            services.AddIdentity<ApplicationUser, ApplicationRole>()
+                .AddRoleManager<RoleManager<ApplicationRole>>()
+                .AddUserManager<ApplicationUserManager>()
+                .AddEntityFrameworkStores<KindergartenDbContext>()
+                .AddDefaultTokenProviders();
+
+            services.AddScoped<IKindergartenDbContext>(provider => provider.GetRequiredService<KindergartenDbContext>());
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IRoleService, RoleServices>();
+            services.AddScoped<ITokenService, TokenService>();
         
 
         return services;
