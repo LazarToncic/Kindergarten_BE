@@ -10,4 +10,5 @@ public interface ITokenService
     Task<LoginResponseDto> GenerateRefreshTokenAfterAccessIsExpired(string refreshToken);
 
     Task<RefreshToken?> CheckIfRefreshTokenIsRevoked(string sentRefreshToken);
+    Task SetRefreshTokenForUserToExpired(string refreshToken);
 }

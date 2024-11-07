@@ -22,6 +22,14 @@ public class AuthController : ApiBaseController
         return Ok(result);
     }
     
+    [Authorize]
+    [HttpPut]
+    public async Task<ActionResult> UserLogout(UserLogoutCommand command)
+    {
+        await Mediator.Send(command);
+        return Ok();
+    }
+    
     [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult> GenerateRefreshTokenAfterAccessIsExpired(RefreshTokenCommand command)

@@ -5,7 +5,6 @@ using System.Text;
 using Kindergarten.Application.Common.Dto.Auth;
 using Kindergarten.Application.Common.Interfaces;
 using Kindergarten.Domain.Entities;
-using Kindergarten.Infrastructure.Exceptions;
 using Kindergarten.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -39,7 +38,7 @@ public class TokenService(IConfiguration configuration, IKindergartenDbContext d
             issuer: configuration["Jwt:Issuer"],
             audience: configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(20),
+            expires: DateTime.UtcNow.AddMinutes(20),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -114,6 +113,22 @@ public class TokenService(IConfiguration configuration, IKindergartenDbContext d
     public async Task<RefreshToken?> CheckIfRefreshTokenIsRevoked(string sentRefreshToken)
     {
         return await dbContext.RefreshTokens
-            .FirstOrDefaultAsync(rt => rt.Token == sentRefreshToken && !rt.IsRevoked);
+            .FirstOrDefaultAsync(rt => rt.Token == sentRefreshToken && !rt.IsRevoked && rt.Expires > DateTime.UtcNow);
+    }
+
+    public async Task SetRefreshTokenForUserToExpired(string refreshToken)
+    {
+        var existingRefreshToken = await dbContext.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.Token == refreshToken && !rt.IsRevoked);
+
+        if (existingRefreshToken == null)
+        {
+            throw new UnauthorizedAccessException("Invalid or revoked refresh token.");
+        }
+
+        existingRefreshToken.IsRevoked = true;
+
+        dbContext.RefreshTokens.Update(existingRefreshToken);
+        await dbContext.SaveChangesAsync(new CancellationToken());
     }
 }

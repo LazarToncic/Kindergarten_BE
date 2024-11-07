@@ -93,4 +93,9 @@ public class AuthService(ApplicationUserManager userManager, ITokenService token
         );
 
     }
+
+    public async Task UserLogoutAsync(string refreshToken)
+    {
+        await tokenService.SetRefreshTokenForUserToExpired(refreshToken);
+    }
 }
