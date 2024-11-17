@@ -3,6 +3,7 @@ using System;
 using Kindergarten.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kindergarten.Infrastructure.Migrations
 {
     [DbContext(typeof(KindergartenDbContext))]
-    partial class KindergartenDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241112170334_EmployeePositionAndAddiotnalRelations")]
+    partial class EmployeePositionAndAddiotnalRelations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -165,6 +168,9 @@ namespace Kindergarten.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("KindergartenId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -173,26 +179,6 @@ namespace Kindergarten.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Departments", (string)null);
-                });
-
-            modelBuilder.Entity("Kindergarten.Domain.Entities.DepartmentEmployee", b =>
-                {
-                    b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RoleInDepartment")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.HasKey("DepartmentId", "EmployeeId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.ToTable("DepartmentEmployee");
                 });
 
             modelBuilder.Entity("Kindergarten.Domain.Entities.Employee", b =>
@@ -242,30 +228,6 @@ namespace Kindergarten.Infrastructure.Migrations
                     b.ToTable("EmployeePositions", (string)null);
                 });
 
-            modelBuilder.Entity("Kindergarten.Domain.Entities.EmployeeQualification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("QualificationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("QualificationObtained")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("QualificationId");
-
-                    b.ToTable("EmployeeQualifications", (string)null);
-                });
-
             modelBuilder.Entity("Kindergarten.Domain.Entities.Kindergarten", b =>
                 {
                     b.Property<Guid>("Id")
@@ -301,37 +263,17 @@ namespace Kindergarten.Infrastructure.Migrations
 
             modelBuilder.Entity("Kindergarten.Domain.Entities.KindergartenDepartment", b =>
                 {
-                    b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("KindergartenId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("DepartmentId", "KindergartenId");
-
-                    b.HasIndex("KindergartenId");
-
-                    b.ToTable("KindergartenDepartments");
-                });
-
-            modelBuilder.Entity("Kindergarten.Domain.Entities.Qualification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("DepartmentId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                    b.HasKey("KindergartenId", "DepartmentId");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
+                    b.HasIndex("DepartmentId");
 
-                    b.HasKey("Id");
-
-                    b.ToTable("Qualification", (string)null);
+                    b.ToTable("KindergartenDepartment");
                 });
 
             modelBuilder.Entity("Kindergarten.Domain.Entities.RefreshToken", b =>
@@ -366,38 +308,6 @@ namespace Kindergarten.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens", (string)null);
-                });
-
-            modelBuilder.Entity("Kindergarten.Domain.Entities.Salary", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Bonus")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("EffectiveFrom")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("Tax")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.ToTable("Salaries", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -510,25 +420,6 @@ namespace Kindergarten.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Kindergarten.Domain.Entities.DepartmentEmployee", b =>
-                {
-                    b.HasOne("Kindergarten.Domain.Entities.Department", "Department")
-                        .WithMany("DepartmentEmployees")
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Kindergarten.Domain.Entities.Employee", "Employee")
-                        .WithMany("DepartmentEmployees")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Department");
-
-                    b.Navigation("Employee");
-                });
-
             modelBuilder.Entity("Kindergarten.Domain.Entities.Employee", b =>
                 {
                     b.HasOne("Kindergarten.Domain.Entities.EmployeePosition", "EmployeePosition")
@@ -556,35 +447,16 @@ namespace Kindergarten.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Kindergarten.Domain.Entities.EmployeeQualification", b =>
-                {
-                    b.HasOne("Kindergarten.Domain.Entities.Employee", "Employee")
-                        .WithMany("EmployeeQualifications")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Kindergarten.Domain.Entities.Qualification", "Qualification")
-                        .WithMany("EmployeeQualifications")
-                        .HasForeignKey("QualificationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Qualification");
-                });
-
             modelBuilder.Entity("Kindergarten.Domain.Entities.KindergartenDepartment", b =>
                 {
                     b.HasOne("Kindergarten.Domain.Entities.Department", "Department")
-                        .WithMany("KindergartenDepartments")
+                        .WithMany("Kindergartens")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Kindergarten.Domain.Entities.Kindergarten", "Kindergarten")
-                        .WithMany("KindergartenDepartment")
+                        .WithMany("Departments")
                         .HasForeignKey("KindergartenId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -603,17 +475,6 @@ namespace Kindergarten.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Kindergarten.Domain.Entities.Salary", b =>
-                {
-                    b.HasOne("Kindergarten.Domain.Entities.Employee", "Employee")
-                        .WithMany("Salaries")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -669,18 +530,7 @@ namespace Kindergarten.Infrastructure.Migrations
 
             modelBuilder.Entity("Kindergarten.Domain.Entities.Department", b =>
                 {
-                    b.Navigation("DepartmentEmployees");
-
-                    b.Navigation("KindergartenDepartments");
-                });
-
-            modelBuilder.Entity("Kindergarten.Domain.Entities.Employee", b =>
-                {
-                    b.Navigation("DepartmentEmployees");
-
-                    b.Navigation("EmployeeQualifications");
-
-                    b.Navigation("Salaries");
+                    b.Navigation("Kindergartens");
                 });
 
             modelBuilder.Entity("Kindergarten.Domain.Entities.EmployeePosition", b =>
@@ -690,14 +540,9 @@ namespace Kindergarten.Infrastructure.Migrations
 
             modelBuilder.Entity("Kindergarten.Domain.Entities.Kindergarten", b =>
                 {
+                    b.Navigation("Departments");
+
                     b.Navigation("Employees");
-
-                    b.Navigation("KindergartenDepartment");
-                });
-
-            modelBuilder.Entity("Kindergarten.Domain.Entities.Qualification", b =>
-                {
-                    b.Navigation("EmployeeQualifications");
                 });
 #pragma warning restore 612, 618
         }

@@ -22,4 +22,7 @@ public class KindergartenDbContext(DbContextOptions<KindergartenDbContext> optio
     }
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Kindergarten.Domain.Entities.Kindergarten> Kindergartens => Set<Kindergarten.Domain.Entities.Kindergarten>();
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<KindergartenDepartment> KindergartenDepartments => Set<KindergartenDepartment>();
 }

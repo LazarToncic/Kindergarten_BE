@@ -17,6 +17,7 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
             {typeof(FluentValidation.ValidationException), HandleFluentValidationException},
             {typeof(NotFoundException), HandleNotFoundException},
             {typeof(UnauthorizedAccessException), HandleUnauthorizedAccessException},
+            {typeof(ConflictException), HandleConflictException},
         };
     }
 
@@ -85,6 +86,11 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
             Detail = exception.Message
         };
         
+        if (exception.AdditionalData != null)
+        {
+            details.Extensions.Add("additionalData", exception.AdditionalData);
+        }
+
         context.Result = new BadRequestObjectResult(details);
 
         context.ExceptionHandled = true;
@@ -104,6 +110,27 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
         {
             Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
         };
+
+        context.Result = new BadRequestObjectResult(details);
+
+        context.ExceptionHandled = true;
+    }
+    
+    private void HandleConflictException(ExceptionContext context)
+    {
+        var exception = (ConflictException)context.Exception;
+
+        var details = new ProblemDetails()
+        {
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+            Title = "The specified resource already exists",
+            Detail = exception.Message
+        };
+        
+        if (exception.AdditionalData != null)
+        {
+            details.Extensions.Add("additionalData", exception.AdditionalData);
+        }
 
         context.Result = new BadRequestObjectResult(details);
 

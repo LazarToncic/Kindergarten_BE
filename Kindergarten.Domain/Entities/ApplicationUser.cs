@@ -10,5 +10,7 @@ public class ApplicationUser : IdentityUser
     public IList<ApplicationUserRole> Roles { get; } = new List<ApplicationUserRole>();
     
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
+
+    public Employee Employee { get; set; }
     
 }

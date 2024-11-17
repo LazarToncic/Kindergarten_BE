@@ -9,10 +9,21 @@ public class KindergartenConfiguration : IEntityTypeConfiguration<Kindergarten.D
     {
         builder.ToTable("Kindergarten");
 
-        builder.Property(x => x.Name).IsRequired();
-        builder.Property(x => x.Address).IsRequired();
-        builder.Property(x => x.City).IsRequired();
+        builder.HasKey(k => k.Id);
+        builder.Property(x => x.Name).IsRequired().HasMaxLength(20);
+        builder.Property(x => x.Address).IsRequired().HasMaxLength(40);
+        builder.Property(x => x.City).IsRequired().HasMaxLength(30);
         builder.Property(x => x.ContactPhone).IsRequired();
         builder.Property(x => x.CreatedAt).IsRequired();
+
+        builder.HasMany(x => x.KindergartenDepartment)
+            .WithOne(x => x.Kindergarten)
+            .HasForeignKey(x => x.KindergartenId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(x => x.Employees)
+            .WithOne(x => x.Kindergarten)
+            .HasForeignKey(x => x.KindergartenId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

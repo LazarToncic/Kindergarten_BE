@@ -9,5 +9,6 @@ public class Kindergarten
     public string ContactPhone { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public List<Department> Departments { get; set; } = new List<Department>();
+    public List<KindergartenDepartment> KindergartenDepartment { get; set; } = new List<KindergartenDepartment>();
+    public List<Employee> Employees { get; set; } = new List<Employee>();
 }
