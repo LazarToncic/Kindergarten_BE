@@ -32,6 +32,10 @@ public static class DependencyInjection
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRoleService, RoleServices>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IKindergartenService, KindergartenService>();
+            services.AddScoped<IDepartmentService, DepartmentService>();
+            services.AddScoped<IQualificationService, QualificationService>();
         
 
         return services;

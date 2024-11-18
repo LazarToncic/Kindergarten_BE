@@ -17,6 +17,7 @@
     <ItemGroup>
       <Folder Include="Auth\Queries\" />
       <Folder Include="Department\Queries\" />
+      <Folder Include="Employee\Queries\" />
       <Folder Include="Kindergarten\Queries\" />
       <Folder Include="Role\Queries\" />
     </ItemGroup>

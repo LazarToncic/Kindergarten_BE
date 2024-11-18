@@ -12,6 +12,7 @@ public class EmployeeQualificationConfiguration : IEntityTypeConfiguration<Kinde
         builder.HasKey(eq => eq.Id);
 
         builder.Property(eq => eq.QualificationObtained)
+            .HasColumnType("date")
             .IsRequired();
         
         builder.HasOne(eq => eq.Employee)

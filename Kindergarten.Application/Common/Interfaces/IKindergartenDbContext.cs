@@ -10,4 +10,8 @@ public interface IKindergartenDbContext
     DbSet<Domain.Entities.Kindergarten> Kindergartens { get; }
     DbSet<Domain.Entities.Department> Departments { get; }
     DbSet<KindergartenDepartment> KindergartenDepartments { get; }
+    DbSet<Domain.Entities.QualificationType> QualificationTypes { get; }
+    DbSet<EmployeePosition> EmployeePositions { get; }
+    DbSet<Domain.Entities.Employee> Employees { get; }
+    DbSet<DepartmentEmployee> DepartmentEmployees { get; }
 }

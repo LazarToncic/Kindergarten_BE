@@ -25,4 +25,8 @@ public class KindergartenDbContext(DbContextOptions<KindergartenDbContext> optio
     public DbSet<Kindergarten.Domain.Entities.Kindergarten> Kindergartens => Set<Kindergarten.Domain.Entities.Kindergarten>();
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<KindergartenDepartment> KindergartenDepartments => Set<KindergartenDepartment>();
+    public DbSet<QualificationType> QualificationTypes  => Set<QualificationType>();
+    public DbSet<EmployeePosition> EmployeePositions => Set<EmployeePosition>();
+    public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<DepartmentEmployee> DepartmentEmployees => Set<DepartmentEmployee>();
 }

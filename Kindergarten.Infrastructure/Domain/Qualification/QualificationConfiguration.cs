@@ -21,5 +21,10 @@ public class QualificationConfiguration : IEntityTypeConfiguration<Kindergarten.
             .WithOne(x => x.Qualification)
             .HasForeignKey(x => x.QualificationId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.QualificationType)
+            .WithMany(x => x.Qualifications)
+            .HasForeignKey(x => x.QualificationTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
