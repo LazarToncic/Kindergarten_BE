@@ -36,6 +36,8 @@ public static class DependencyInjection
             services.AddScoped<IKindergartenService, KindergartenService>();
             services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<IQualificationService, QualificationService>();
+            services.AddScoped<ISalaryService, SalaryService>();
+            services.AddScoped<IEmployeePositionService, EmployeePositionService>();
         
 
         return services;

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Kindergarten.Infrastructure.Services;
 
 public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserManager userManager, IKindergartenService kindergartenService, 
-    IDepartmentService departmentService) : IEmployeeService
+    IDepartmentService departmentService, IQualificationService qualificationService, ISalaryService salaryService) : IEmployeeService
 {
     public async Task CreateEmployee(CreateEmployeeDto dto, CancellationToken cancellationToken)
     {
@@ -28,9 +28,14 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
         dbContext.Employees.Add(employee);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        var departmentEmployee = await departmentService.AssignNewEmployeeToDepartment(dto.DepartmentName, employee.Id, cancellationToken);
+        var setQualifications = await qualificationService.AssignQualificationToNewEmployee(dto.Qualifications, employee.Id, cancellationToken);
 
-        if (!departmentEmployee)
+        var setSalaries = await salaryService.CreateSalaryForNewEmployee(dto.Qualifications,dto.EmployeePositionName, employee.Id, cancellationToken);
+
+        // ovde dodaj da li zaposleni moze da radi u top departmanu na osnovu qualificationa
+        var setDepartmentEmployee = await departmentService.AssignNewEmployeeToDepartment(dto.DepartmentName, employee.Id, cancellationToken);
+
+        if (!setDepartmentEmployee)
             throw new ConflictException("this user cannot get a job", 
                 new {});
         
@@ -55,7 +60,7 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
     private async Task<Guid> GetEmployeePositionId(string positionName)
     {
         var name = await dbContext.EmployeePositions
-            .Where(x => x.Name.Equals(positionName, StringComparison.OrdinalIgnoreCase))
+            .Where(x => x.Name.Equals(positionName))
             .FirstOrDefaultAsync();
 
         if (name == null)

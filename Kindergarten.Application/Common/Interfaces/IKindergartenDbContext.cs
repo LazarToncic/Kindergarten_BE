@@ -14,4 +14,6 @@ public interface IKindergartenDbContext
     DbSet<EmployeePosition> EmployeePositions { get; }
     DbSet<Domain.Entities.Employee> Employees { get; }
     DbSet<DepartmentEmployee> DepartmentEmployees { get; }
+    DbSet<Qualification> Qualifications { get; }
+    DbSet<EmployeeQualification> EmployeeQualifications { get; }
 }
