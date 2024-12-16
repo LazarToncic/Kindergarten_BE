@@ -1,11 +1,13 @@
 using Kindergarten.Application.Common.Dto.Qualification;
+using Kindergarten.Application.Common.Extensions;
 using Kindergarten.Application.Common.Interfaces;
+using Kindergarten.Domain.Entities;
 
 namespace Kindergarten.Infrastructure.Services;
 
 public class SalaryService(IKindergartenDbContext dbContext, IQualificationService qualificationService) : ISalaryService
 {
-    public Task<bool> CreateSalaryForNewEmployee(List<QualificationCreateEmployeeDto> qualifications, string employeePositionName, Guid employeeId, CancellationToken cancellationToken)
+    public async Task<string> CreateSalaryForNewEmployee(List<QualificationCreateEmployeeDto> qualifications, string employeePositionName, Guid employeeId, CancellationToken cancellationToken)
     {
         var baseAmount = GetBaseAmountSalaryDependingOnPosition(employeePositionName);
         var typeOfQualifications = qualifications.Select(qualification => qualification.TypeOfQualification).ToList();
@@ -13,19 +15,33 @@ public class SalaryService(IKindergartenDbContext dbContext, IQualificationServi
         var strongestQualification = qualificationService.GetStrongestQualificationWhenCreatingNewEmployee(typeOfQualifications);
 
         var finalAmount = GetTotalAmountOfSalaryWithQualification(baseAmount, strongestQualification);
-        
-        
-        throw new NotImplementedException();
+
+        var salary = new Salary
+        {
+            EmployeeId = employeeId,
+            Amount = finalAmount,
+            Currency = "RSD"
+        };
+
+        dbContext.Salaries.Add(salary);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return strongestQualification;
     }
 
     private int GetTotalAmountOfSalaryWithQualification(int baseAmount, string strongestQualification)
     {
         var newAmount = 0;
 
-        //TODO OVDE SI STAO!
+        if (strongestQualification == EmployeeQualificationsExtensions.Bachelor)
+        {
+            newAmount = baseAmount + 10000;
+        } else if (strongestQualification == EmployeeQualificationsExtensions.Master)
+        {
+            newAmount = baseAmount + 16000;
+        }
         
-        
-        return 1;
+        return newAmount;
     }
 
     private int GetBaseAmountSalaryDependingOnPosition(string positionName)

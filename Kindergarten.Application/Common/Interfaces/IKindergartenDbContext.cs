@@ -7,6 +7,8 @@ public interface IKindergartenDbContext
 {
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     DbSet<RefreshToken> RefreshTokens { get; }
+    DbSet<ApplicationUser> Users { get; }
+    DbSet<ApplicationRole> Roles { get; }
     DbSet<Domain.Entities.Kindergarten> Kindergartens { get; }
     DbSet<Domain.Entities.Department> Departments { get; }
     DbSet<KindergartenDepartment> KindergartenDepartments { get; }
@@ -16,4 +18,5 @@ public interface IKindergartenDbContext
     DbSet<DepartmentEmployee> DepartmentEmployees { get; }
     DbSet<Qualification> Qualifications { get; }
     DbSet<EmployeeQualification> EmployeeQualifications { get; }
+    DbSet<Salary> Salaries { get; }
 }

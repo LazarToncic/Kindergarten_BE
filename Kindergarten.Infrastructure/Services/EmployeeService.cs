@@ -8,10 +8,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Kindergarten.Infrastructure.Services;
 
 public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserManager userManager, IKindergartenService kindergartenService, 
-    IDepartmentService departmentService, IQualificationService qualificationService, ISalaryService salaryService) : IEmployeeService
+    IDepartmentService departmentService, IQualificationService qualificationService, ISalaryService salaryService, ICoordinatorService coordinatorService) : IEmployeeService
 {
     public async Task CreateEmployee(CreateEmployeeDto dto, CancellationToken cancellationToken)
     {
+        if (! await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten(dto.KindergartenName))
+            throw new CoordinatorException("This Coordinator cant give jobs or make changes in Kindergarten in which he/she doesnt work");
+        
         var userId = await FindUserId(dto.EmailOrUsername);
 
         var employeePositionId = await GetEmployeePositionId(dto.EmployeePositionName);
@@ -30,18 +33,30 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
 
         var setQualifications = await qualificationService.AssignQualificationToNewEmployee(dto.Qualifications, employee.Id, cancellationToken);
 
-        var setSalaries = await salaryService.CreateSalaryForNewEmployee(dto.Qualifications,dto.EmployeePositionName, employee.Id, cancellationToken);
-
-        // ovde dodaj da li zaposleni moze da radi u top departmanu na osnovu qualificationa
-        var setDepartmentEmployee = await departmentService.AssignNewEmployeeToDepartment(dto.DepartmentName, employee.Id, cancellationToken);
+        var strongestQualification = await salaryService.CreateSalaryForNewEmployee(dto.Qualifications,dto.EmployeePositionName, employee.Id, cancellationToken);
+        
+        var setDepartmentEmployee = await departmentService.AssignNewEmployeeToDepartment(dto.DepartmentName, dto.EmployeePositionName, employee.Id, strongestQualification, cancellationToken);
 
         if (!setDepartmentEmployee)
             throw new ConflictException("this user cannot get a job", 
                 new {});
         
-        //TODO  ovde sad za qualifications i salary ali trebas da dodas da na osnovu qualificationoa mogu da budu zaposleni u tom departmanu
-        //TODO i da kordinator moze samo u svom vrticu da zaposljava.
-        //TODO nisi proverio dal ovo radi!!!!!!!!!
+    }
+
+    public async Task UpdateEmployeePosition(UpdateEmployeePositionDto dto, CancellationToken cancellationToken)
+    {
+        if (! await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten(dto.KindergartenName))
+            throw new CoordinatorException("This Coordinator cant give jobs or make changes in Kindergarten in which he/she doesnt work");
+
+        var employee = await dbContext.Employees
+            .FirstOrDefaultAsync(x => x.Id.Equals(dto.EmployeeId), cancellationToken: cancellationToken);
+
+        if (employee == null)
+            throw new NotFoundException("This Employee doesnt exist");
+
+        employee.EmployeePositionId = dto.EmployeePositionId;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<string> FindUserId(string emailOrUsername)

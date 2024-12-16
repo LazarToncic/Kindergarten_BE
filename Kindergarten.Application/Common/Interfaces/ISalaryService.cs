@@ -4,6 +4,6 @@ namespace Kindergarten.Application.Common.Interfaces;
 
 public interface ISalaryService
 {
-    public Task<bool> CreateSalaryForNewEmployee(List<QualificationCreateEmployeeDto> qualifications, string employeePositionName, Guid employeeId,
+    public Task<string> CreateSalaryForNewEmployee(List<QualificationCreateEmployeeDto> qualifications, string employeePositionName, Guid employeeId,
         CancellationToken cancellationToken);
 }

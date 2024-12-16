@@ -7,7 +7,7 @@ namespace Kindergarten_BE.Api.Controllers;
 public class EmployeePositionsController : ApiBaseController
 {
     [HttpPost]
-    //[Authorize(Roles = "Owner,Coordinator")]
+    [Authorize(Roles = "Owner,Coordinator")]
     public async Task<ActionResult> CreateEmployeePositions([FromBody] CreateEmployeePositionsCommand command)
     {
         await Mediator.Send(command);

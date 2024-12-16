@@ -1,5 +1,6 @@
 using Kindergarten.Application.Common.Dto.Qualification;
 using Kindergarten.Application.Common.Exceptions;
+using Kindergarten.Application.Common.Extensions;
 using Kindergarten.Application.Common.Interfaces;
 using Kindergarten.Application.Common.Mappers.EmployeeQualification;
 using Kindergarten.Application.Common.Mappers.Qualification;
@@ -43,19 +44,19 @@ public class QualificationService(IKindergartenDbContext dbContext) : IQualifica
     {
         var strongestRole = "";
         
-        if (qualifications.Contains("Secondary School"))
+        if (qualifications.Contains(EmployeeQualificationsExtensions.HighSchool))
         {
-            strongestRole = "Secondary School";
+            strongestRole = EmployeeQualificationsExtensions.HighSchool;
         } 
         
-        if (qualifications.Contains("Bachelor Degree"))
+        if (qualifications.Contains(EmployeeQualificationsExtensions.Bachelor))
         {
-            strongestRole = "Bachelor degree";
+            strongestRole = EmployeeQualificationsExtensions.Bachelor;
         } 
         
-        if (qualifications.Contains("Master Degree"))
+        if (qualifications.Contains(EmployeeQualificationsExtensions.Master))
         {
-            strongestRole = "Master Degree";
+            strongestRole = EmployeeQualificationsExtensions.Master;
         }
 
         return strongestRole;

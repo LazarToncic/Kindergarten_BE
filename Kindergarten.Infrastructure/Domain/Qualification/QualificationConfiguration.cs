@@ -12,7 +12,7 @@ public class QualificationConfiguration : IEntityTypeConfiguration<Kindergarten.
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name)
             .IsRequired()
-            .HasMaxLength(30);
+            .HasMaxLength(100);
         
         builder.Property(q => q.Description)
             .HasMaxLength(250);
