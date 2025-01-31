@@ -45,18 +45,58 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
 
     public async Task UpdateEmployeePosition(UpdateEmployeePositionDto dto, CancellationToken cancellationToken)
     {
-        if (! await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten(dto.KindergartenName))
-            throw new CoordinatorException("This Coordinator cant give jobs or make changes in Kindergarten in which he/she doesnt work");
+        if (!await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten(dto.KindergartenName))
+            throw new CoordinatorException(
+                "This Coordinator cant give jobs or make changes in Kindergarten in which he/she doesnt work");
 
         var employee = await dbContext.Employees
+            .Include(x => x.EmployeePosition)
             .FirstOrDefaultAsync(x => x.Id.Equals(dto.EmployeeId), cancellationToken: cancellationToken);
 
         if (employee == null)
             throw new NotFoundException("This Employee doesnt exist");
 
-        employee.EmployeePositionId = dto.EmployeePositionId;
+        var newPositionName = await dbContext.EmployeePositions
+            .Where(p => p.Id == dto.EmployeePositionId)
+            .Select(p => p.Name)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        if (string.IsNullOrEmpty(newPositionName))
+            throw new NotFoundException("The specified Employee Position doesn't exist");
+        
+        switch (newPositionName)
+        {
+            case "Coordinator":
+                if (employee.EmployeePosition.Name == "Teacher")
+                {
+                    await departmentService.DeleteDepartmentsForNewCoordinator(dto.EmployeeId, cancellationToken);
+                    
+                    await salaryService.CreateNewSalaryWhenEmployeeIsChangingPositions(dto.EmployeeId, dto.EmployeePositionId, cancellationToken);
+                
+                    employee.EmployeePositionId = dto.EmployeePositionId;
+
+                    await dbContext.SaveChangesAsync(cancellationToken);
+                }
+                break;
+
+            case "Manager":
+                // Logika za kada neko postane menadžer
+                break;
+
+            case "Driver":
+                // Logika za kada neko postane vozač
+                break;
+
+            case "Cook":
+                // Logika za kada neko postane kuvar
+                break;
+
+            default:
+                // Opcionalno - ako nova pozicija ne zahteva posebne promene
+                break;
+        }
+
+        
     }
 
     private async Task<string> FindUserId(string emailOrUsername)

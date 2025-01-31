@@ -24,4 +24,10 @@ public class CoordinatorService(ICurrentUserService currentUserService, IKinderg
 
         return false;
     }
+
+    public async Task<bool> CheckIfEmployeeIsBeingPromotedToCoordinator(Guid coordinatorId)
+    {
+        return await dbContext.EmployeePositions
+            .AnyAsync(x => x.Id == coordinatorId && x.Name == "Coordinator");
+    }
 }

@@ -21,6 +21,9 @@ public class SalaryConfiguration : IEntityTypeConfiguration<Salary>
         builder.Property(s => s.Currency)
             .IsRequired();
 
+        builder.Property(s => s.EmployeePosition)
+            .IsRequired();
+
         builder.HasOne(s => s.Employee)
             .WithMany(e => e.Salaries)
             .HasForeignKey(s => s.EmployeeId)

@@ -6,6 +6,6 @@ public interface IQualificationService
 {
     public Task<bool> AssignQualificationToNewEmployee(List<QualificationCreateEmployeeDto> qualifications, Guid employeeId, CancellationToken cancellationToken);
 
-    public string GetStrongestQualificationWhenCreatingNewEmployee(
+    public string GetStrongestQualificationForEmployee(
         List<string> qualifications);
 }

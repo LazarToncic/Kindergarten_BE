@@ -9,6 +9,7 @@ public class Salary
     public int? Bonus { get; set; }
     public int? Tax { get; set; }
     public string Currency { get; set; } = "RSD";
+    public string EmployeePosition { get; set; }
 
     public Employee Employee { get; set; }
 }

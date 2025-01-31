@@ -22,25 +22,38 @@ public class QualificationService(IKindergartenDbContext dbContext) : IQualifica
                 throw new NotFoundException("Qualification of this type doesnt exist",
                     new {qualification.TypeOfQualification});
 
-            var newQualification = qualification.FromQualificationCreateEmployeeDtoToQualification(qualificationType.Id);
+            var existingQualification = await dbContext.Qualifications
+                .FirstOrDefaultAsync(x => x.Name == qualification.Qualification, cancellationToken);
+            
+            if (existingQualification != null)
+            {
+                var employeeQualification = existingQualification.Id.FromQualificationGuidsToEmployeeQualification(employeeId, qualification.QualificationObtained);
 
-            dbContext.Qualifications.Add(newQualification);
-            var newQualificationResult = await dbContext.SaveChangesAsync(cancellationToken);
+                dbContext.EmployeeQualifications.Add(employeeQualification);
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+            else
+            {
+                var newQualification = qualification.FromQualificationCreateEmployeeDtoToQualification(qualificationType.Id);
 
-            if (newQualificationResult <= 0)
-                return false;
+                dbContext.Qualifications.Add(newQualification);
+                var newQualificationResult = await dbContext.SaveChangesAsync(cancellationToken);
 
-            var employeeQualification = newQualification.Id.FromQualificationGuidsToEmployeeQualification(employeeId, qualification.QualificationObtained);
+                if (newQualificationResult <= 0)
+                    return false;
 
-            dbContext.EmployeeQualifications.Add(employeeQualification);
-            await dbContext.SaveChangesAsync(cancellationToken);
+                var employeeQualification = newQualification.Id.FromQualificationGuidsToEmployeeQualification(employeeId, qualification.QualificationObtained);
+
+                dbContext.EmployeeQualifications.Add(employeeQualification);
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
 
         }
 
         return true;
     }
 
-    public string GetStrongestQualificationWhenCreatingNewEmployee(List<string> qualifications)
+    public string GetStrongestQualificationForEmployee(List<string> qualifications)
     {
         var strongestRole = "";
         

@@ -10,7 +10,7 @@ public class CurrentUserService : ICurrentUserService
     
     public string? UserId { get; }
     public string? Email { get; }
-    public List<string>? Roles { get; }
+    public List<string> Roles { get; } = new List<string>();
     
     public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {

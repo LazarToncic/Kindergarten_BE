@@ -57,6 +57,13 @@ public class DepartmentService(IKindergartenDbContext dbContext) : IDepartmentSe
         return false;
     }
 
+    public async Task DeleteDepartmentsForNewCoordinator(Guid employeeId, CancellationToken cancellationToken)
+    {
+        await dbContext.DepartmentEmployees
+            .Where(x => x.EmployeeId.Equals(employeeId))
+            .ExecuteDeleteAsync(cancellationToken);
+    }
+
     private async Task<Department> GetDepartment(string departmentName)
     {
         var department = await dbContext.Departments

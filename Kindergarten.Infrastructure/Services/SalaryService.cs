@@ -2,6 +2,7 @@ using Kindergarten.Application.Common.Dto.Qualification;
 using Kindergarten.Application.Common.Extensions;
 using Kindergarten.Application.Common.Interfaces;
 using Kindergarten.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kindergarten.Infrastructure.Services;
 
@@ -12,7 +13,7 @@ public class SalaryService(IKindergartenDbContext dbContext, IQualificationServi
         var baseAmount = GetBaseAmountSalaryDependingOnPosition(employeePositionName);
         var typeOfQualifications = qualifications.Select(qualification => qualification.TypeOfQualification).ToList();
 
-        var strongestQualification = qualificationService.GetStrongestQualificationWhenCreatingNewEmployee(typeOfQualifications);
+        var strongestQualification = qualificationService.GetStrongestQualificationForEmployee(typeOfQualifications);
 
         var finalAmount = GetTotalAmountOfSalaryWithQualification(baseAmount, strongestQualification);
 
@@ -20,13 +21,44 @@ public class SalaryService(IKindergartenDbContext dbContext, IQualificationServi
         {
             EmployeeId = employeeId,
             Amount = finalAmount,
-            Currency = "RSD"
+            Currency = "RSD",
+            EmployeePosition = employeePositionName
         };
 
         dbContext.Salaries.Add(salary);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return strongestQualification;
+    }
+
+    public async Task CreateNewSalaryWhenEmployeeIsChangingPositions(Guid employeeId,Guid employeePositionId, CancellationToken cancellationToken)
+    {
+        var newPositionName = await dbContext.EmployeePositions
+            .Where(x => x.Id.Equals(employeePositionId))
+            .Select(x => x.Name)
+            .FirstOrDefaultAsync(cancellationToken);
+        
+        var baseAmount = GetBaseAmountSalaryDependingOnPosition(newPositionName);
+
+        var qualifications = await dbContext.EmployeeQualifications
+            .Where(x => x.EmployeeId.Equals(employeeId))
+            .Select(x => x.Qualification.QualificationType.Name)
+            .ToListAsync(cancellationToken);
+
+        var strongestQualification = qualificationService.GetStrongestQualificationForEmployee(qualifications);
+        
+        var finalAmount = GetTotalAmountOfSalaryWithQualification(baseAmount, strongestQualification);
+        
+        var salary = new Salary
+        {
+            EmployeeId = employeeId,
+            Amount = finalAmount,
+            Currency = "RSD",
+            EmployeePosition = newPositionName
+        };
+
+        dbContext.Salaries.Add(salary);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private int GetTotalAmountOfSalaryWithQualification(int baseAmount, string strongestQualification)
