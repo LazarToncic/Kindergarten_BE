@@ -37,7 +37,7 @@ public class AuthService(ApplicationUserManager userManager, ITokenService token
                     new { Errors = result.Errors.ToList() });
             }
 
-            var rolesResult = await userManager.AddToRoleAsync(user, "Parental Figure");
+            var rolesResult = await userManager.AddToRoleAsync(user, "User");
             if (!rolesResult.Succeeded)
             {
                 await userManager.DeleteAsync(user);

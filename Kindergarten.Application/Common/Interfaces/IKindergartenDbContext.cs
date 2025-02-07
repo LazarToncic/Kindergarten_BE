@@ -9,6 +9,7 @@ public interface IKindergartenDbContext
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<ApplicationUser> Users { get; }
     DbSet<ApplicationRole> Roles { get; }
+    DbSet<ApplicationUserRole> UserRoles { get; }
     DbSet<Domain.Entities.Kindergarten> Kindergartens { get; }
     DbSet<Domain.Entities.Department> Departments { get; }
     DbSet<KindergartenDepartment> KindergartenDepartments { get; }

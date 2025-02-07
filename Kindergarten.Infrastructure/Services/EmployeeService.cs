@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Kindergarten.Infrastructure.Services;
 
 public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserManager userManager, IKindergartenService kindergartenService, 
-    IDepartmentService departmentService, IQualificationService qualificationService, ISalaryService salaryService, ICoordinatorService coordinatorService) : IEmployeeService
+    IDepartmentService departmentService, IQualificationService qualificationService, ISalaryService salaryService,
+    ICoordinatorService coordinatorService, IRoleService roleService) : IEmployeeService
 {
     public async Task CreateEmployee(CreateEmployeeDto dto, CancellationToken cancellationToken)
     {
@@ -16,6 +17,9 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
             throw new CoordinatorException("This Coordinator cant give jobs or make changes in Kindergarten in which he/she doesnt work");
         
         var userId = await FindUserId(dto.EmailOrUsername);
+
+        if (userId == null)
+            throw new NotFoundException("This user doesn't exist", additionalData: dto.EmailOrUsername);
 
         var employeePositionId = await GetEmployeePositionId(dto.EmployeePositionName);
 
@@ -40,7 +44,9 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
         if (!setDepartmentEmployee)
             throw new ConflictException("this user cannot get a job", 
                 new {});
-        
+
+        // moramo i u userRoles da dodamo rolu Coordinator ili Employee
+        await roleService.AddRoleToEmployeeAsync(userId, dto.EmployeePositionName, cancellationToken);
     }
 
     public async Task UpdateEmployeePosition(UpdateEmployeePositionDto dto, CancellationToken cancellationToken)
@@ -76,6 +82,9 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
                     employee.EmployeePositionId = dto.EmployeePositionId;
 
                     await dbContext.SaveChangesAsync(cancellationToken);
+
+                    // moramo i u userRoles da dodamo rolu Coordinator
+                    await roleService.AddRoleToEmployeeAsync(employee.UserId, newPositionName, cancellationToken);
                 }
                 break;
 
