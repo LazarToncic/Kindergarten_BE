@@ -14,6 +14,9 @@ public class ParentConfiguration : IEntityTypeConfiguration<Parent>
         builder.Property(x => x.UserId).IsRequired();
         builder.Property(x => x.IsVerified).IsRequired();
         
-        
+        builder.HasMany(x => x.ParentChildren)
+            .WithOne(x => x.Parent)
+            .HasForeignKey(x => x.ParentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
