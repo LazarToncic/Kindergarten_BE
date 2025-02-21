@@ -13,6 +13,11 @@ public class ParentConfiguration : IEntityTypeConfiguration<Parent>
         
         builder.Property(x => x.UserId).IsRequired();
         builder.Property(x => x.IsVerified).IsRequired();
+
+        builder.HasOne(x => x.User)
+            .WithOne(x => x.Parent)
+            .HasForeignKey<Parent>(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         builder.HasMany(x => x.ParentChildren)
             .WithOne(x => x.Parent)
