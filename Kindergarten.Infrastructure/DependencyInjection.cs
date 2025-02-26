@@ -40,6 +40,7 @@ public static class DependencyInjection
             services.AddScoped<IEmployeePositionService, EmployeePositionService>();
             services.AddScoped<ICoordinatorService, CoordinatorService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IParentService, ParentService>();
         
 
         return services;
