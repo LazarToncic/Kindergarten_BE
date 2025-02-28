@@ -25,6 +25,23 @@ public class CoordinatorService(ICurrentUserService currentUserService, IKinderg
         return false;
     }
 
+    public async Task<bool> CheckIfCoordinatorWorksInSameKindergarten2(string kindergartenName)
+    {
+        if (currentUserService.Roles!.Contains("Coordinator"))
+        {
+            var existingKindergartenName = await dbContext.Users
+                .Include(x => x.Employee)
+                .ThenInclude(x => x.Kindergarten)
+                .Where(x => x.Id.Equals(currentUserService.UserId))
+                .Select(x => x.Employee.Kindergarten.Name)
+                .FirstOrDefaultAsync();
+
+            return existingKindergartenName == kindergartenName;
+        }
+
+        return false;
+    }
+
     public async Task<bool> CheckIfEmployeeIsBeingPromotedToCoordinator(Guid coordinatorId)
     {
         return await dbContext.EmployeePositions

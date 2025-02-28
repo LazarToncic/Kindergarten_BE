@@ -1,4 +1,5 @@
 using Kindergarten.Application.Parent.Commands;
+using Kindergarten.Application.Parent.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,5 +13,13 @@ public class ParentController : ApiBaseController
     {
         await Mediator.Send(command);
         return Ok();
+    }
+    
+    [HttpGet]
+    [Authorize(Roles = "Coordinator,Owner,Manager")]
+    public async Task<ActionResult> GetParentRequests([FromQuery] GetParentRequestQuery query)
+    {
+        var result = await Mediator.Send(query);
+        return Ok(result);
     }
 }
