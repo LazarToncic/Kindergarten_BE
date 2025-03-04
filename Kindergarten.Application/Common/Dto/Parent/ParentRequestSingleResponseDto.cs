@@ -4,9 +4,11 @@ public record ParentRequestSingleResponseDto(
     Guid Id,
     string FirstName,
     string LastName,
+    string Email,
+    string PhoneNumber,
     string KindergartenName,
     bool IsOnlineApproved,
     bool IsInPersonApproved,
     DateTime CreatedAt,
-    List<ParentRequestChildDto> Children
+    List<ParentRequestChildDto>? ChildrenJson
     );

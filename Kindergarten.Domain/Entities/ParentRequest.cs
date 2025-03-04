@@ -10,7 +10,7 @@ public class ParentRequest
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ApprovedAt { get; set; }
     public string PreferredKindergarten { get; set; }
-    public string ChildrenJson { get; set; } = string.Empty;
+    public string ChildrenJson { get; set; } = "[]";
     
     public ApplicationUser User { get; set; } = null!;
     

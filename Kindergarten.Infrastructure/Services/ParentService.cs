@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Kindergarten.Infrastructure.Services;
 
 public class ParentService(ICurrentUserService currentUserService, IKindergartenDbContext dbContext, 
-    ICoordinatorService coordinatorService) : IParentService
+    ICoordinatorService coordinatorService, IKindergartenService kindergartenService) : IParentService
 {
     public async Task CreateParentRequest(int numberOfChildren, string? additionalInfo, string preferredKindergarten, 
         List<ParentRequestChildDto> children, CancellationToken cancellationToken)
@@ -25,22 +25,25 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
         CancellationToken cancellationToken)
     {
         var userRoles = currentUserService.Roles!;
+        var kindergartenName = await kindergartenService.GetKindergartenName(dto.KindergartenId);
+        
         IQueryable<ParentRequest> query = dbContext.ParentRequests.AsQueryable();
+        
 
         if (userRoles.Contains(RolesExtensions.Manager) || userRoles.Contains(RolesExtensions.Owner))
         {
-            query = query.Where(pr => pr.PreferredKindergarten == dto.KindergartenName);
+            query = query.Where(pr => pr.PreferredKindergarten == kindergartenName);
         }
         else if (userRoles.Contains(RolesExtensions.Coordinator))
         {
             var isUserCoordinatorForThisKindergarten =
-                await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten2(dto.KindergartenName);
+                await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten2(kindergartenName);
         
         
             if (!isUserCoordinatorForThisKindergarten) 
                 throw new CoordinatorException("You are not a coordinator for this Kindergarten and cant make any changes.");
             
-            query = query.Where(pr => pr.PreferredKindergarten == dto.KindergartenName);
+            query = query.Where(pr => pr.PreferredKindergarten == kindergartenName);
         }else
         {
             throw new UnauthorizedAccessException("User role is not authorized to access this information.");
@@ -58,8 +61,8 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
         if (dto.IsInPersonApproved.HasValue)
             query = query.Where(x => x.IsInPersonApproved == dto.IsInPersonApproved);
 
-        // ovde vrati samo 1 element iako ima 2
         var pagedRequests = await query
+            .Include(pr => pr.User)
             .Skip((dto.PageNumber - 1) * dto.PageSize)
             .Take(dto.PageSize)
             .ToListAsync(cancellationToken);

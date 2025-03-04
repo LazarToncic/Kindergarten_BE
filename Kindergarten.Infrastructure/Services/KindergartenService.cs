@@ -18,4 +18,16 @@ public class KindergartenService(IKindergartenDbContext dbContext) : IKindergart
 
         return kindergarten.Id;
     }
+
+    public async Task<string> GetKindergartenName(Guid kindergartenId)
+    {
+        var kindergarten = await dbContext.Kindergartens
+            .Where(x => x.Id.Equals(kindergartenId))
+            .FirstOrDefaultAsync();
+
+        if (kindergarten == null)
+            throw new NotFoundException("Kindergarten with this Name doesnt exist");
+
+        return kindergarten.Name;
+    }
 }
