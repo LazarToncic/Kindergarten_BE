@@ -14,7 +14,9 @@ public class ParentRequestConfiguration : IEntityTypeConfiguration<ParentRequest
         builder.Property(x => x.NumberOfChildren).IsRequired();
         builder.Property(x => x.AdditionalInfo).HasMaxLength(300);
         builder.Property(x => x.IsOnlineApproved).IsRequired();
+        builder.Property(x => x.OnlineApprovedByUserId).HasMaxLength(255);
         builder.Property(x => x.IsInPersonApproved).IsRequired();
+        builder.Property(x => x.InPersonApprovedByUserId).HasMaxLength(255);
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.ApprovedAt).IsRequired(false);
         builder.Property(x => x.PreferredKindergarten).IsRequired();
@@ -27,5 +29,16 @@ public class ParentRequestConfiguration : IEntityTypeConfiguration<ParentRequest
             .WithMany(x => x.ParentRequests)
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        // ako zelis da dodas u withMany moras u ApplicationUser da napravis 2 nove liste za ovo
+        builder.HasOne(x => x.OnlineApprovedByUser)
+            .WithMany()
+            .HasForeignKey(x => x.OnlineApprovedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(x => x.InPersonApprovedByUser)
+            .WithMany()
+            .HasForeignKey(x => x.InPersonApprovedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

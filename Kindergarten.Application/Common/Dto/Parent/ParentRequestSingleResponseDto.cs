@@ -10,5 +10,7 @@ public record ParentRequestSingleResponseDto(
     bool IsOnlineApproved,
     bool IsInPersonApproved,
     DateTime CreatedAt,
-    List<ParentRequestChildDto>? ChildrenJson
+    List<ParentRequestChildDto>? ChildrenJson,
+    string? OnlineApprovedBy,   
+    string? InPersonApprovedBy
     );

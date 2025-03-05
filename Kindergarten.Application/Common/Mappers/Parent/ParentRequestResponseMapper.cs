@@ -22,7 +22,13 @@ public static partial class ParentRequestResponseMapper
             pr.IsInPersonApproved,
             pr.CreatedAt,
             JsonSerializer.Deserialize<List<ParentRequestChildDto>>(pr.ChildrenJson, options) 
-            ?? new List<ParentRequestChildDto>()
+            ?? new List<ParentRequestChildDto>(),
+            pr.OnlineApprovedByUser != null 
+                ? $"{pr.OnlineApprovedByUser.FirstName} {pr.OnlineApprovedByUser.LastName}" 
+                : "Not approved yet",
+            pr.InPersonApprovedByUser != null 
+                ? $"{pr.InPersonApprovedByUser.FirstName} {pr.InPersonApprovedByUser.LastName}" 
+                : "Not approved yet"
         )).ToList();
 
         return new GetParentRequestQueryResponseDto(parentRequestDtos);

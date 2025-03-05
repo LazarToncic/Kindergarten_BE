@@ -63,13 +63,64 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
 
         var pagedRequests = await query
             .Include(pr => pr.User)
+            .Include(pr => pr.OnlineApprovedByUser)
+            .Include(pr => pr.InPersonApprovedByUser)
             .Skip((dto.PageNumber - 1) * dto.PageSize)
             .Take(dto.PageSize)
             .ToListAsync(cancellationToken);
         
-        // ovde bude null
         var pagedRequestsDto = pagedRequests.ParentRequestToGetParentRequestQueryResponseDto();
 
         return pagedRequestsDto;
+    }
+
+    public async Task ApproveParentRequestOnline(Guid parentRequestId, CancellationToken cancellationToken)
+    {
+        var parentRequest = await GetParentRequestById(parentRequestId);
+        var canUserApproveThis =
+            await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten(parentRequest.PreferredKindergarten);
+
+        if (!canUserApproveThis)
+            throw new PermissionDeniedException("User does not have permission to approve this request.");
+        
+        parentRequest.IsOnlineApproved = true;
+        parentRequest.OnlineApprovedByUserId = currentUserService.UserId;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task ApproveParentRequestInPerson(Guid parentRequestId, CancellationToken cancellationToken)
+    {
+        var parentRequest = await GetParentRequestById(parentRequestId);
+        
+        var canUserApproveThis =
+            await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten(parentRequest.PreferredKindergarten);
+
+        if (!canUserApproveThis)
+            throw new PermissionDeniedException("User does not have permission to approve this request.");
+        
+        parentRequest.IsInPersonApproved = true;
+        parentRequest.InPersonApprovedByUserId = currentUserService.UserId;
+
+        CheckIfParentRequestIsFullyApproved(parentRequest);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private void CheckIfParentRequestIsFullyApproved(ParentRequest parentRequest)
+    {
+        if (parentRequest is { IsInPersonApproved: true, IsOnlineApproved: true }) 
+            parentRequest.ApprovedAt = DateTime.UtcNow;
+    }
+
+    private async Task<ParentRequest> GetParentRequestById(Guid parentRequestId)
+    {
+        var parentRequest = await dbContext.ParentRequests
+            .FirstOrDefaultAsync(x => x.Id == parentRequestId);
+        
+        if (parentRequest == null)
+            throw new NotFoundException("Parent request not found.");
+
+        return parentRequest;
     }
 }

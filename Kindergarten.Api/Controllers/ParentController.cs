@@ -22,4 +22,20 @@ public class ParentController : ApiBaseController
         var result = await Mediator.Send(query);
         return Ok(result);
     }
+
+    [HttpPost]
+    [Authorize(Roles = "Coordinator,Owner,Manager")]
+    public async Task<ActionResult> ApproveParentRequestOnline([FromQuery] ApproveParentRequestOnlineCommand command)
+    {
+        await Mediator.Send(command);
+        return Ok();
+    }
+    
+    [HttpPost]
+    [Authorize(Roles = "Coordinator,Owner,Manager")]
+    public async Task<ActionResult> ApproveParentRequestInPerson([FromQuery] ApproveParentRequestInPersonCommand command)
+    {
+        await Mediator.Send(command);
+        return Ok();
+    }
 }
