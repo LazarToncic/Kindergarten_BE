@@ -91,26 +91,64 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
 
     public async Task ApproveParentRequestInPerson(Guid parentRequestId, CancellationToken cancellationToken)
     {
-        var parentRequest = await GetParentRequestById(parentRequestId);
+        using var transaction = await dbContext.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var parentRequest = await GetParentRequestById(parentRequestId);
         
-        var canUserApproveThis =
-            await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten(parentRequest.PreferredKindergarten);
+            var canUserApproveThis =
+                await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten(parentRequest.PreferredKindergarten);
 
-        if (!canUserApproveThis)
-            throw new PermissionDeniedException("User does not have permission to approve this request.");
+            if (!canUserApproveThis)
+                throw new PermissionDeniedException("User does not have permission to approve this request.");
+            
+            if (!parentRequest.IsOnlineApproved)
+                throw new ParentRequestOnlineNotApprovedException("The request must be approved online before it can be approved in person.");
         
-        parentRequest.IsInPersonApproved = true;
-        parentRequest.InPersonApprovedByUserId = currentUserService.UserId;
+            parentRequest.IsInPersonApproved = true;
+            parentRequest.InPersonApprovedByUserId = currentUserService.UserId;
 
-        CheckIfParentRequestIsFullyApproved(parentRequest);
+            CheckIfParentRequestIsFullyApproved(parentRequest);
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            await ApproveRequest(parentRequest.UserId, cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
+            
+            // TODO - Dodaj da se deca upisuju iz ParentRequesta
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 
     private void CheckIfParentRequestIsFullyApproved(ParentRequest parentRequest)
     {
         if (parentRequest is { IsInPersonApproved: true, IsOnlineApproved: true }) 
             parentRequest.ApprovedAt = DateTime.UtcNow;
+    }
+
+    private async Task ApproveRequest(string userId, CancellationToken cancellationToken)
+    {
+        var parentRoleId = await dbContext.Roles
+            .Where(x => x.Name!.Equals(RolesExtensions.Parent))
+            .Select(x => x.Id)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+        if (parentRoleId == null)
+            throw new NotFoundException("Ova rola ne postoji");
+
+        var userRole = new ApplicationUserRole
+        {
+            RoleId = parentRoleId,
+            UserId = userId
+        };
+        
+        dbContext.UserRoles.Add(userRole);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<ParentRequest> GetParentRequestById(Guid parentRequestId)

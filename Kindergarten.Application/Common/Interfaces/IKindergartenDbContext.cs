@@ -1,11 +1,13 @@
 using Kindergarten.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Kindergarten.Application.Common.Interfaces;
 
 public interface IKindergartenDbContext
 {
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<ApplicationUser> Users { get; }
     DbSet<ApplicationRole> Roles { get; }

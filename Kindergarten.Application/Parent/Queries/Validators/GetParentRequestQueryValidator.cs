@@ -7,7 +7,7 @@ public class GetParentRequestQueryValidator : AbstractValidator<GetParentRequest
 {
     public GetParentRequestQueryValidator()
     {
-        /*RuleFor(x => x.Dto)
-            .SetValidator(new GetParentRequestQueryDtoValidator());*/
+        RuleFor(x => x.Dto)
+            .SetValidator(new GetParentRequestQueryDtoValidator());
     }
 }

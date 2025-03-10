@@ -8,4 +8,5 @@ public class Child
     public string LastName { get; set; }
     public DateTime YearOfBirth { get; set; }
     public List<ParentChild> ParentChildren { get; set; } = new List<ParentChild>();
+    public ICollection<ChildAllergy> ChildAllergies { get; set; } = new List<ChildAllergy>();
 }
