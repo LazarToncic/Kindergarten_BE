@@ -24,5 +24,10 @@ public class ChildConfiguration : IEntityTypeConfiguration<Child>
             .WithOne(x => x.Child)
             .HasForeignKey(x => x.ChildId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(x => x.ChildMedicalConditions)
+            .WithOne(x => x.Child)
+            .HasForeignKey(x => x.ChildId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

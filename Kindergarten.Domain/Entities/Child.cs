@@ -9,4 +9,5 @@ public class Child
     public DateTime YearOfBirth { get; set; }
     public List<ParentChild> ParentChildren { get; set; } = new List<ParentChild>();
     public ICollection<ChildAllergy> ChildAllergies { get; set; } = new List<ChildAllergy>();
+    public List<ChildMedicalCondition> ChildMedicalConditions { get; set; } = new List<ChildMedicalCondition>();
 }
