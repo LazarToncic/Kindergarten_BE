@@ -1,3 +1,5 @@
+using Kindergarten.Domain.Entities.Enums;
+
 namespace Kindergarten.Domain.Entities;
 public class ParentRequest
 {
@@ -13,6 +15,7 @@ public class ParentRequest
     public DateTime? ApprovedAt { get; set; }
     public string PreferredKindergarten { get; set; }
     public string ChildrenJson { get; set; } = "[]";
+    public ParentChildRelationship ParentRole { get; set; }
     
     public ApplicationUser User { get; set; } = null!;
     public ApplicationUser? OnlineApprovedByUser { get; set; }

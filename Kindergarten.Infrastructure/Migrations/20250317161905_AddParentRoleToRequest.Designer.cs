@@ -3,6 +3,7 @@ using System;
 using Kindergarten.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kindergarten.Infrastructure.Migrations
 {
     [DbContext(typeof(KindergartenDbContext))]
-    partial class KindergartenDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250317161905_AddParentRoleToRequest")]
+    partial class AddParentRoleToRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -406,12 +409,12 @@ namespace Kindergarten.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTime>("VerifiedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -476,9 +479,8 @@ namespace Kindergarten.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<string>("ParentRole")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("ParentRole")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PreferredKindergarten")
                         .IsRequired()

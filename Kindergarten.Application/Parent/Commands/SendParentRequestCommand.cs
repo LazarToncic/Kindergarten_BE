@@ -11,6 +11,6 @@ public class SendParentRequestCommandHandler(IParentService parentService) : IRe
     public async Task Handle(SendParentRequestCommand request, CancellationToken cancellationToken)
     {
         await parentService.CreateParentRequest(request.Dto.NumberOfChildren, request.Dto.AdditionalInfo,
-            request.Dto.PreferredKindergarten, request.Dto.Children, cancellationToken);
+            request.Dto.PreferredKindergarten, request.Dto.ParentChildRelationship ,request.Dto.Children, cancellationToken);
     }
 }

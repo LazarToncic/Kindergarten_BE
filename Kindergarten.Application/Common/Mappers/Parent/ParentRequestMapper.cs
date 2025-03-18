@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Kindergarten.Application.Common.Dto.Parent;
 using Kindergarten.Domain.Entities;
+using Kindergarten.Domain.Entities.Enums;
 using Riok.Mapperly.Abstractions;
 
 namespace Kindergarten.Application.Common.Mappers.Parent;
@@ -9,7 +10,7 @@ namespace Kindergarten.Application.Common.Mappers.Parent;
 public static partial class ParentRequestMapper
 {
     public static ParentRequest NewParentRequest(string userId, int numberOfChildren, string? additionalInfo, 
-        string preferredKindergarten, List<ParentRequestChildDto> children)
+        string preferredKindergarten, ParentChildRelationship parentChildRelationship, List<ParentRequestChildDto> children)
     {
         return new ParentRequest
         {
@@ -19,6 +20,7 @@ public static partial class ParentRequestMapper
             IsOnlineApproved = false,
             IsInPersonApproved = false,
             PreferredKindergarten = preferredKindergarten,
+            ParentRole = parentChildRelationship,
             ChildrenJson = JsonSerializer.Serialize(children)
         };
     }

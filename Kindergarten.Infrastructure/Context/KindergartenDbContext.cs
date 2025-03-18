@@ -39,4 +39,6 @@ public class KindergartenDbContext(DbContextOptions<KindergartenDbContext> optio
     public DbSet<EmployeeQualification> EmployeeQualifications => Set<EmployeeQualification>();
     public DbSet<Salary> Salaries => Set<Salary>();
     public DbSet<ParentRequest> ParentRequests => Set<ParentRequest>();
+    public DbSet<Child> Children => Set<Child>();
+    public DbSet<Parent> Parents => Set<Parent>();
 }

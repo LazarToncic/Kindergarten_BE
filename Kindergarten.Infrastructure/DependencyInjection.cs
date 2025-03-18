@@ -41,6 +41,7 @@ public static class DependencyInjection
             services.AddScoped<ICoordinatorService, CoordinatorService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IParentService, ParentService>();
+            services.AddScoped<IChildrenService, ChildrenService>();
         
 
         return services;

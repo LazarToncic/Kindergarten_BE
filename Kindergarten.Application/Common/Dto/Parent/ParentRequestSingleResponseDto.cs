@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Kindergarten.Domain.Entities.Enums;
+
 namespace Kindergarten.Application.Common.Dto.Parent;
 
 public record ParentRequestSingleResponseDto(
@@ -10,6 +13,8 @@ public record ParentRequestSingleResponseDto(
     bool IsOnlineApproved,
     bool IsInPersonApproved,
     DateTime CreatedAt,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
+    ParentChildRelationship ParentChildRelationship,
     List<ParentRequestChildDto>? ChildrenJson,
     string? OnlineApprovedBy,   
     string? InPersonApprovedBy

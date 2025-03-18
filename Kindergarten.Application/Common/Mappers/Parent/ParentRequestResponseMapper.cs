@@ -21,6 +21,7 @@ public static partial class ParentRequestResponseMapper
             pr.IsOnlineApproved,
             pr.IsInPersonApproved,
             pr.CreatedAt,
+            pr.ParentRole,
             JsonSerializer.Deserialize<List<ParentRequestChildDto>>(pr.ChildrenJson, options) 
             ?? new List<ParentRequestChildDto>(),
             pr.OnlineApprovedByUser != null 

@@ -20,6 +20,9 @@ public class ParentRequestConfiguration : IEntityTypeConfiguration<ParentRequest
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.ApprovedAt).IsRequired(false);
         builder.Property(x => x.PreferredKindergarten).IsRequired();
+        builder.Property(x => x.ParentRole)
+            .HasConversion<string>()
+            .IsRequired();
         
         builder.Property(x => x.ChildrenJson)
             .HasColumnType("jsonb")

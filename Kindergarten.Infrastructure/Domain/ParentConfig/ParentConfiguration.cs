@@ -12,7 +12,7 @@ public class ParentConfiguration : IEntityTypeConfiguration<Parent>
         builder.HasKey(x => x.Id);
         
         builder.Property(x => x.UserId).IsRequired();
-        builder.Property(x => x.IsVerified).IsRequired();
+        builder.Property(x => x.VerifiedAt).IsRequired();
 
         builder.HasOne(x => x.User)
             .WithOne(x => x.Parent)

@@ -10,7 +10,7 @@ public class ChildAllergyConfiguration : IEntityTypeConfiguration<ChildAllergy>
     {
         builder.ToTable("ChildAllergies");
 
-        builder.HasKey(ca => new { ca.Child, ca.AllergyId });
+        builder.HasKey(ca => new { ca.ChildId, ca.AllergyId });
 
         builder.HasOne(x => x.Child)
             .WithMany(x => x.ChildAllergies)

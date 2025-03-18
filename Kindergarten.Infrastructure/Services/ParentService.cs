@@ -4,18 +4,19 @@ using Kindergarten.Application.Common.Extensions;
 using Kindergarten.Application.Common.Interfaces;
 using Kindergarten.Application.Common.Mappers.Parent;
 using Kindergarten.Domain.Entities;
+using Kindergarten.Domain.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kindergarten.Infrastructure.Services;
 
 public class ParentService(ICurrentUserService currentUserService, IKindergartenDbContext dbContext, 
-    ICoordinatorService coordinatorService, IKindergartenService kindergartenService) : IParentService
+    ICoordinatorService coordinatorService, IKindergartenService kindergartenService, IChildrenService childrenService) : IParentService
 {
     public async Task CreateParentRequest(int numberOfChildren, string? additionalInfo, string preferredKindergarten, 
-        List<ParentRequestChildDto> children, CancellationToken cancellationToken)
+        ParentChildRelationship parentChildRelationship, List<ParentRequestChildDto> children, CancellationToken cancellationToken)
     {
         var parentRequest = ParentRequestMapper.NewParentRequest(currentUserService.UserId!, numberOfChildren, additionalInfo,
-            preferredKindergarten, children);
+            preferredKindergarten, parentChildRelationship,children);
         
         dbContext.ParentRequests.Add(parentRequest);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -114,15 +115,30 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
 
             await ApproveRequest(parentRequest.UserId, cancellationToken);
 
-            await transaction.CommitAsync(cancellationToken);
+            var parentId = await CreateParentThroughApprovedParentRequest(parentRequest.UserId, cancellationToken);
             
-            // TODO - Dodaj da se deca upisuju iz ParentRequesta
+            await childrenService.AddChildrenThroughParentRequest(parentRequest.ChildrenJson, parentId, cancellationToken);
+            
+            await transaction.CommitAsync(cancellationToken);
         }
         catch
         {
             await transaction.RollbackAsync(cancellationToken);
             throw;
         }
+    }
+
+    private async Task<Guid> CreateParentThroughApprovedParentRequest(string userId, CancellationToken cancellationToken)
+    {
+        var parent = new Parent
+        {
+            UserId = userId
+        };
+        
+        dbContext.Parents.Add(parent);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return parent.Id;
     }
 
     private void CheckIfParentRequestIsFullyApproved(ParentRequest parentRequest)
