@@ -117,7 +117,7 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
 
             var parentId = await CreateParentThroughApprovedParentRequest(parentRequest.UserId, cancellationToken);
             
-            await childrenService.AddChildrenThroughParentRequest(parentRequest.ChildrenJson, parentId, cancellationToken);
+            await childrenService.AddChildrenThroughParentRequest(parentRequest.ChildrenJson, parentId,parentRequest.ParentRole, cancellationToken);
             
             await transaction.CommitAsync(cancellationToken);
         }

@@ -24,5 +24,8 @@ public interface IKindergartenDbContext
     DbSet<Salary> Salaries { get; }
     DbSet<ParentRequest> ParentRequests { get; }
     DbSet<Child> Children { get; }
+    DbSet<ParentChild> ParentChildren { get; }
     DbSet<Domain.Entities.Parent> Parents { get; }
+    DbSet<Allergy> Allergies { get; }
+    DbSet<ChildAllergy> ChildAllergies { get; }
 }

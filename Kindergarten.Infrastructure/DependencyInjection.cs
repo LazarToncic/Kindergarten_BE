@@ -42,6 +42,8 @@ public static class DependencyInjection
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IParentService, ParentService>();
             services.AddScoped<IChildrenService, ChildrenService>();
+            services.AddScoped<IAllergyService, AllergyService>();
+            services.AddScoped<IMedicalConditionService, MedicalConditionService>();
         
 
         return services;
