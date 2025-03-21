@@ -50,8 +50,8 @@ public class AllergyService(IKindergartenDbContext kindergartenDbContext) : IAll
                     await kindergartenDbContext.SaveChangesAsync(cancellationToken);
                 }
             }
-    }
+        }
         
-        throw new NotImplementedException();
+        
     }
 }

@@ -8,7 +8,8 @@ using Kindergarten.Domain.Entities.Enums;
 
 namespace Kindergarten.Infrastructure.Services;
 
-public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService allergyService) : IChildrenService
+public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService allergyService, 
+    IMedicalConditionService medicalConditionService) : IChildrenService
 {
     public async Task AddChildrenThroughParentRequest(string jsonChildren, Guid parentId,
         ParentChildRelationship relationship, CancellationToken cancellationToken)
@@ -47,5 +48,7 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
         
         await allergyService.CreateAllergiesForChildrenThroughParentRequest(createdChildren, cancellationToken);
         
+        await medicalConditionService.CreateMedicalConditiionsForChildrenThroughParentRequest(createdChildren, cancellationToken);
+
     }
 }

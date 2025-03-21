@@ -10,4 +10,5 @@ public class Department
     
     public List<KindergartenDepartment> KindergartenDepartments { get; set; } = new List<KindergartenDepartment>();
     public List<DepartmentEmployee> DepartmentEmployees { get; set; } = new();
+    public List<ChildDepartment> ChildDepartmentAssignments { get; set; } = new List<ChildDepartment>();
 }

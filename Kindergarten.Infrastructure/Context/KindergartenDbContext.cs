@@ -44,4 +44,6 @@ public class KindergartenDbContext(DbContextOptions<KindergartenDbContext> optio
     public DbSet<Parent> Parents => Set<Parent>();
     public DbSet<Allergy> Allergies => Set<Allergy>();
     public DbSet<ChildAllergy> ChildAllergies => Set<ChildAllergy>();
+    public DbSet<MedicalCondition> MedicalConditions => Set<MedicalCondition>();
+    public DbSet<ChildMedicalCondition> ChildMedicalConditions => Set<ChildMedicalCondition>();
 }

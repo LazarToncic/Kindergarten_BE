@@ -33,5 +33,10 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .WithOne(x => x.Department)
             .HasForeignKey(x => x.DepartmentId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.HasMany(x => x.ChildDepartmentAssignments)
+            .WithOne(x => x.Department)
+            .HasForeignKey(x => x.DepartmentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

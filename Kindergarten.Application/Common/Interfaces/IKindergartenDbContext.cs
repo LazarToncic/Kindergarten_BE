@@ -28,4 +28,6 @@ public interface IKindergartenDbContext
     DbSet<Domain.Entities.Parent> Parents { get; }
     DbSet<Allergy> Allergies { get; }
     DbSet<ChildAllergy> ChildAllergies { get; }
+    DbSet<MedicalCondition> MedicalConditions { get; }
+    DbSet<ChildMedicalCondition> ChildMedicalConditions { get; }
 }

@@ -10,4 +10,5 @@ public class Child
     public List<ParentChild> ParentChildren { get; set; } = new List<ParentChild>();
     public ICollection<ChildAllergy> ChildAllergies { get; set; } = new List<ChildAllergy>();
     public List<ChildMedicalCondition> ChildMedicalConditions { get; set; } = new List<ChildMedicalCondition>();
+    public List<ChildDepartment> DepartmentAssignments { get; set; } = new List<ChildDepartment>();
 }
