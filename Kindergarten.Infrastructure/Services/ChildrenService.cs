@@ -9,7 +9,7 @@ using Kindergarten.Domain.Entities.Enums;
 namespace Kindergarten.Infrastructure.Services;
 
 public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService allergyService, 
-    IMedicalConditionService medicalConditionService) : IChildrenService
+    IMedicalConditionService medicalConditionService, ICurrentUserService currentUserService, IParentService parentService) : IChildrenService
 {
     public async Task AddChildrenThroughParentRequest(string jsonChildren, Guid parentId,
         ParentChildRelationship relationship, CancellationToken cancellationToken)
@@ -50,5 +50,47 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
         
         await medicalConditionService.CreateMedicalConditiionsForChildrenThroughParentRequest(createdChildren, cancellationToken);
 
+    }
+
+    public async Task AddNewChild(string firstName, string lastName, DateTime dateOfBirth, bool hasAllergies, List<string>? allergies,
+        bool hasMedicalIssues, List<string>? medicalConditions, ParentChildRelationship parentChildRelationship, CancellationToken cancellationToken)
+    {
+        var userId = currentUserService.UserId;
+        
+        using var transaction = await dbContext.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var child = new Child
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                YearOfBirth = dateOfBirth
+            };
+            
+            dbContext.Children.Add(child);
+            
+            var parentId = await parentService.GetParentIdWithUserId(userId!, cancellationToken);
+
+            var childParent = new ParentChild
+            {
+                ParentId = parentId,
+                ChildId = child.Id,
+                Relationship = parentChildRelationship
+            };
+            
+            dbContext.ParentChildren.Add(childParent);
+
+            await allergyService.CreateAllergiesForNewChild(child.Id, hasAllergies, allergies, cancellationToken);
+            await medicalConditionService.CreateMedicalConditionsForNewChild(child.Id, hasMedicalIssues, medicalConditions, cancellationToken);
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 }

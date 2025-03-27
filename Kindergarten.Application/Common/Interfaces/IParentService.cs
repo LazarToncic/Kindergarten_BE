@@ -9,4 +9,6 @@ public interface IParentService
     Task<GetParentRequestQueryResponseDto> GetParentRequest(GetParentRequestQueryDto dto, CancellationToken cancellationToken);
     Task ApproveParentRequestOnline(Guid parentRequestId, CancellationToken cancellationToken);
     Task ApproveParentRequestInPerson(Guid parentRequestId, CancellationToken cancellationToken);
+    
+    Task<Guid> GetParentIdWithUserId(string userId, CancellationToken cancellationToken);
 }

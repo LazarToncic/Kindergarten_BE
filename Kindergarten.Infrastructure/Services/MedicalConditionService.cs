@@ -27,7 +27,7 @@ public class MedicalConditionService(IKindergartenDbContext dbContext) : IMedica
 
                     if (existingMedicalCondition == null)
                     {
-                        var newMedicalConditionId = await CreateNewMedicalConditionThroughParentRequest(normalizedMedicalConditionName, cancellationToken);
+                        var newMedicalConditionId = await CreateNewMedicalCondition(normalizedMedicalConditionName, cancellationToken);
                         childMedicalCondition.MedicalConditionId = newMedicalConditionId;
                     }
                     else
@@ -44,7 +44,41 @@ public class MedicalConditionService(IKindergartenDbContext dbContext) : IMedica
         }
     }
 
-    private async Task<Guid> CreateNewMedicalConditionThroughParentRequest(string medicalConditionName,
+    public async Task CreateMedicalConditionsForNewChild(Guid childId, bool hasMedicalIssues, List<string>? medicalConditions,
+        CancellationToken cancellationToken)
+    {
+        if (hasMedicalIssues)
+        {
+            foreach (var medicalCondition in medicalConditions!)
+            {
+                var normalizedMedicalConditionName = medicalCondition.Trim();
+
+                var existingMedicalCondition = await dbContext.MedicalConditions
+                    .FirstOrDefaultAsync(a => a.Name.ToLower() == normalizedMedicalConditionName.ToLower(),
+                        cancellationToken);
+
+                var childMedicalCondition = new ChildMedicalCondition();
+
+                if (existingMedicalCondition == null)
+                {
+                    var newMedicalConditionId =
+                        await CreateNewMedicalCondition(normalizedMedicalConditionName,
+                            cancellationToken);
+                    childMedicalCondition.MedicalConditionId = newMedicalConditionId;
+                }
+                else
+                {
+                    childMedicalCondition.MedicalConditionId = existingMedicalCondition.Id;
+                }
+
+                childMedicalCondition.ChildId = childId;
+
+                dbContext.ChildMedicalConditions.Add(childMedicalCondition);
+            }
+        }
+    }
+
+    private async Task<Guid> CreateNewMedicalCondition(string medicalConditionName,
         CancellationToken cancellationToken)
     {
         var newMedicalCondition = new MedicalCondition 

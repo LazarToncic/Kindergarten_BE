@@ -128,6 +128,22 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
         }
     }
 
+    public async Task<Guid> GetParentIdWithUserId(string userId, CancellationToken cancellationToken)
+    {
+        if (userId == null)
+            throw new NotFoundException("User id cannot be null.");
+        
+        var parentId = await dbContext.Parents
+            .Where(x => x.UserId == userId)
+            .Select(x => x.UserId)
+            .FirstOrDefaultAsync(cancellationToken);
+        
+        if (parentId == null)
+            throw new NotFoundException("Parent id cannot be null.");
+        
+        return Guid.Parse(parentId);
+    }
+
     private async Task<Guid> CreateParentThroughApprovedParentRequest(string userId, CancellationToken cancellationToken)
     {
         var parent = new Parent

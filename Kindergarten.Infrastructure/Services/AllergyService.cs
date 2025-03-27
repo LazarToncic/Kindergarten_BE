@@ -10,16 +10,17 @@ public class AllergyService(IKindergartenDbContext kindergartenDbContext) : IAll
 {
     public async Task<Guid> CreateAllergy(string allergy, CancellationToken cancellationToken)
     {
-        var newAllergy = new Allergy 
-        { 
-            Name = allergy 
+        var newAllergy = new Allergy
+        {
+            Name = allergy
         };
         kindergartenDbContext.Allergies.Add(newAllergy);
         await kindergartenDbContext.SaveChangesAsync(cancellationToken);
         return newAllergy.Id;
     }
 
-    public async Task CreateAllergiesForChildrenThroughParentRequest(List<NewChildrenThroughParentRequestDto> children, CancellationToken cancellationToken)
+    public async Task CreateAllergiesForChildrenThroughParentRequest(List<NewChildrenThroughParentRequestDto> children,
+        CancellationToken cancellationToken)
     {
         foreach (var child in children)
         {
@@ -28,12 +29,13 @@ public class AllergyService(IKindergartenDbContext kindergartenDbContext) : IAll
                 foreach (var allergy in child.Allergies!)
                 {
                     var normalizedAllergyName = allergy.Trim();
-                    
+
                     var existingAllergy = await kindergartenDbContext.Allergies
-                        .FirstOrDefaultAsync(a => a.Name.ToLower() == normalizedAllergyName.ToLower(), cancellationToken);
+                        .FirstOrDefaultAsync(a => a.Name.ToLower() == normalizedAllergyName.ToLower(),
+                            cancellationToken);
 
                     var childAllergies = new ChildAllergy();
-                    
+
                     if (existingAllergy == null)
                     {
                         var newAllergyId = await CreateAllergy(normalizedAllergyName, cancellationToken);
@@ -45,13 +47,44 @@ public class AllergyService(IKindergartenDbContext kindergartenDbContext) : IAll
                     }
 
                     childAllergies.ChildId = child.Id;
-                    
+
                     kindergartenDbContext.ChildAllergies.Add(childAllergies);
                     await kindergartenDbContext.SaveChangesAsync(cancellationToken);
                 }
             }
         }
-        
-        
+
+
+    }
+
+    public async Task CreateAllergiesForNewChild(Guid childId, bool hasAllergies, List<string>? allergies,
+        CancellationToken cancellationToken)
+    {
+        if (hasAllergies)
+        {
+            foreach (var allergy in allergies!)
+            {
+                var normalizedAllergyName = allergy.Trim();
+
+                var existingAllergy = await kindergartenDbContext.Allergies
+                    .FirstOrDefaultAsync(a => a.Name.ToLower() == normalizedAllergyName.ToLower(), cancellationToken);
+
+                var childAllergies = new ChildAllergy();
+
+                if (existingAllergy == null)
+                {
+                    var newAllergyId = await CreateAllergy(normalizedAllergyName, cancellationToken);
+                    childAllergies.AllergyId = newAllergyId;
+                }
+                else
+                {
+                    childAllergies.AllergyId = existingAllergy.Id;
+                }
+
+                childAllergies.ChildId = childId;
+
+                kindergartenDbContext.ChildAllergies.Add(childAllergies);
+            }
+        }
     }
 }

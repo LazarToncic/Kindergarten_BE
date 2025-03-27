@@ -1,3 +1,4 @@
+using Kindergarten.Application.Child.Commands;
 using Kindergarten.Application.Parent.Commands;
 using Kindergarten.Application.Parent.Queries;
 using Microsoft.AspNetCore.Authorization;
