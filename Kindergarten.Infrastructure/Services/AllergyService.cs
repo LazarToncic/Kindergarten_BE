@@ -73,7 +73,7 @@ public class AllergyService(IKindergartenDbContext kindergartenDbContext) : IAll
 
                 if (existingAllergy == null)
                 {
-                    var newAllergyId = await CreateAllergy(normalizedAllergyName, cancellationToken);
+                    var newAllergyId = CreateAllergyForChildren(normalizedAllergyName, cancellationToken);
                     childAllergies.AllergyId = newAllergyId;
                 }
                 else
@@ -86,5 +86,16 @@ public class AllergyService(IKindergartenDbContext kindergartenDbContext) : IAll
                 kindergartenDbContext.ChildAllergies.Add(childAllergies);
             }
         }
+    }
+    
+    private Guid CreateAllergyForChildren(string allergy, CancellationToken cancellationToken)
+    {
+        var newAllergy = new Allergy
+        {
+            Name = allergy
+        };
+        
+        kindergartenDbContext.Allergies.Add(newAllergy);
+        return newAllergy.Id;
     }
 }

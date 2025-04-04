@@ -1,15 +1,17 @@
 using System.Text.Json;
 using Kindergarten.Application.Common.Dto.Children;
 using Kindergarten.Application.Common.Dto.Parent;
+using Kindergarten.Application.Common.Exceptions;
 using Kindergarten.Application.Common.Interfaces;
 using Kindergarten.Application.Common.Mappers.Children;
 using Kindergarten.Domain.Entities;
 using Kindergarten.Domain.Entities.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kindergarten.Infrastructure.Services;
 
 public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService allergyService, 
-    IMedicalConditionService medicalConditionService, ICurrentUserService currentUserService, IParentService parentService) : IChildrenService
+    IMedicalConditionService medicalConditionService, ICurrentUserService currentUserService) : IChildrenService
 {
     public async Task AddChildrenThroughParentRequest(string jsonChildren, Guid parentId,
         ParentChildRelationship relationship, CancellationToken cancellationToken)
@@ -69,7 +71,7 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
             
             dbContext.Children.Add(child);
             
-            var parentId = await parentService.GetParentIdWithUserId(userId!, cancellationToken);
+            var parentId = await GetParentIdWithUserId(userId!, cancellationToken);
 
             var childParent = new ParentChild
             {
@@ -92,5 +94,21 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
             await transaction.RollbackAsync(cancellationToken);
             throw;
         }
+    }
+    
+    private async Task<Guid> GetParentIdWithUserId(string userId, CancellationToken cancellationToken)
+    {
+        if (userId == null)
+            throw new NotFoundException("User id cannot be null.");
+        
+        var parentId = await dbContext.Parents
+            .Where(x => x.UserId == userId)
+            .Select(x => x.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+        
+        if (parentId == Guid.Empty)
+            throw new NotFoundException("Parent id cannot be null.");
+        
+        return parentId;
     }
 }
