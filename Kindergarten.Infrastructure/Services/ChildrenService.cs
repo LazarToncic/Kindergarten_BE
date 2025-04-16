@@ -89,8 +89,13 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
             await transaction.CommitAsync(cancellationToken);
 
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine("Exception: " + ex.Message);
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine("Inner Exception: " + ex.InnerException.Message);
+            }
             await transaction.RollbackAsync(cancellationToken);
             throw;
         }
