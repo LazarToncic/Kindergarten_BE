@@ -16,7 +16,8 @@ public class ParentRequestChildDtoValidator : AbstractValidator<ParentRequestChi
             .MaximumLength(30).WithMessage("Last name must be at most 30 characters long.");
 
         RuleFor(x => x.DateOfBirth)
-            .LessThan(DateTime.UtcNow).WithMessage("Date of birth must be in the past.");
+            .Must(dob => dob < DateOnly.FromDateTime(DateTime.UtcNow))
+            .WithMessage("Date of birth must be in the past.");
 
         RuleFor(x => x.Allergies)
             .NotEmpty().When(x => x.HasAllergies)

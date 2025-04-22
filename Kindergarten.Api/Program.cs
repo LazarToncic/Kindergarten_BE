@@ -1,4 +1,5 @@
 using System.Text;
+using Kindergarten_BE.Api.Converters;
 using Kindergarten_BE.Api.Filters;
 using Kindergarten.Application;
 using Kindergarten.Infrastructure;
@@ -8,7 +9,14 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers(options => options.Filters.Add<ApiExceptionFilterAttribute>());
+builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<ApiExceptionFilterAttribute>();
+    })
+    .AddJsonOptions(opts =>
+    {
+        opts.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -38,6 +46,13 @@ builder.Services.AddSwaggerGen(c =>
             },
             Array.Empty<string>()
         }
+    });
+    
+    c.MapType<DateOnly>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Format = "date",
+        Description = "YYYY-MM-DD"
     });
 });
 

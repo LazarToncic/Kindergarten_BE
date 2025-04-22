@@ -54,7 +54,7 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
 
     }
 
-    public async Task AddNewChild(string firstName, string lastName, DateTime dateOfBirth, bool hasAllergies, List<string>? allergies,
+    public async Task AddNewChild(string firstName, string lastName, DateOnly dateOfBirth, bool hasAllergies, List<string>? allergies,
         bool hasMedicalIssues, List<string>? medicalConditions, ParentChildRelationship parentChildRelationship, CancellationToken cancellationToken)
     {
         var userId = currentUserService.UserId;
