@@ -2,6 +2,7 @@ using System.Text.Json;
 using Kindergarten.Application.Common.Dto.Children;
 using Kindergarten.Application.Common.Dto.Parent;
 using Kindergarten.Application.Common.Exceptions;
+using Kindergarten.Application.Common.Extensions;
 using Kindergarten.Application.Common.Interfaces;
 using Kindergarten.Application.Common.Mappers.Children;
 using Kindergarten.Domain.Entities;
@@ -11,7 +12,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Kindergarten.Infrastructure.Services;
 
 public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService allergyService, 
-    IMedicalConditionService medicalConditionService, ICurrentUserService currentUserService) : IChildrenService
+    IMedicalConditionService medicalConditionService, ICurrentUserService currentUserService, 
+    ICoordinatorService coordinatorService) : IChildrenService
 {
     public async Task AddChildrenThroughParentRequest(string jsonChildren, Guid parentId,
         ParentChildRelationship relationship, CancellationToken cancellationToken)
@@ -100,7 +102,70 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
             throw;
         }
     }
-    
+
+    /*public async Task<GetUnassignedChildrenDto> GetUnassignedChildren(Guid? kindergartenId, string? firstName,
+        string? lastName, CancellationToken cancellationToken)
+    {
+        var roles = currentUserService.Roles!;
+
+        // 1) Početni query: sva deca koja trenutno **nemaju** aktivno dodeljivanje
+        IQueryable<Child> query = dbContext.Children
+            .Where(c => !c.DepartmentAssignments.Any(da => da.IsActive));
+
+        // 2) Filtriranje po vrsti korisnika
+        if (roles.Contains(RolesExtensions.Owner) || roles.Contains(RolesExtensions.Manager))
+        {
+            // Owner/Manager mogu da pretražuju po bilo kom vrtiću:
+            if (kindergartenId.HasValue)
+            {
+                var kgId = kindergartenId.Value;
+                query = query.Where(c =>
+                    // ne postoji nijedna aktivna dodela kojoj department pripada traženom vrtiću
+                    !c.DepartmentAssignments
+                        .Any(cd =>
+                            cd.IsActive
+                            && cd.Department
+                                .KindergartenDepartments
+                                .Any(kd => kd.KindergartenId == kgId)
+                        ));
+            }
+            // ako ne pošalju kindergartenId, ostaje sva deca iz svih vrtića
+        }
+        else if (roles.Contains(RolesExtensions.Coordinator))
+        {
+            // Coordinator vidi samo decu iz svog vrtića:
+            var myKgId = await coordinatorService
+                .GetKindergartenIdForCoordinator(currentUserService.UserId!, cancellationToken);
+
+            query = query.Where(c =>
+                !c.DepartmentAssignments
+                    .Any(da => da.KindergartenId == myKgId && da.IsActive));
+        }
+        else
+        {
+            throw new UnauthorizedAccessException("You are not authorized to view unassigned children.");
+        }
+
+        // 3) Dodatni filteri po imenu i prezimenu
+        if (!string.IsNullOrWhiteSpace(firstName))
+            query = query.Where(c => c.FirstName.Contains(firstName!));
+
+        if (!string.IsNullOrWhiteSpace(lastName))
+            query = query.Where(c => c.LastName.Contains(lastName!));
+
+        // 4) Projekcija u DTO i izvršavanje upita
+        var list = await query
+            .Select(c => new ChildDto(
+                c.Id,
+                c.FirstName,
+                c.LastName,
+                c.YearOfBirth
+            ))
+            .ToListAsync(cancellationToken);
+
+        return new GetUnassignedChildrenDto(list);
+    }*/
+
     private async Task<Guid> GetParentIdWithUserId(string userId, CancellationToken cancellationToken)
     {
         if (userId == null)
