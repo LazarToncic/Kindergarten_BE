@@ -4,11 +4,11 @@ using MediatR;
 
 namespace Kindergarten.Application.Child.Queries;
 
-public record GetGetUnassignedChildrenQuery(GetGetUnassignedChildrenQueryDto Dto) : IRequest<GetUnassignedChildrenDto>;
+public record GetGetUnassignedChildrenQuery(GetGetUnassignedChildrenQueryDto Dto) : IRequest<GetUnassignedChildrenListDto>;
 
-public class GetGetUnassignedChildrenQueryHandler(IChildrenService childrenService) : IRequestHandler<GetGetUnassignedChildrenQuery, GetUnassignedChildrenDto>
+public class GetGetUnassignedChildrenQueryHandler(IChildrenService childrenService) : IRequestHandler<GetGetUnassignedChildrenQuery, GetUnassignedChildrenListDto>
 {
-    public async Task<GetUnassignedChildrenDto> Handle(GetGetUnassignedChildrenQuery request, CancellationToken cancellationToken)
+    public async Task<GetUnassignedChildrenListDto> Handle(GetGetUnassignedChildrenQuery request, CancellationToken cancellationToken)
     {
         return await childrenService.GetUnassignedChildren(request.Dto.KindergartenId,
             request.Dto.FirstName,

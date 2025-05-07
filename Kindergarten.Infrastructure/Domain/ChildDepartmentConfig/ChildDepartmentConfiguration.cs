@@ -20,6 +20,11 @@ public class ChildDepartmentConfiguration : IEntityTypeConfiguration<ChildDepart
             .WithMany(d => d.ChildDepartmentAssignments)
             .HasForeignKey(cda => cda.DepartmentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.Kindergarten)
+            .WithMany()
+            .HasForeignKey(x => x.KindergartenId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         builder.Property(cda => cda.AssignedAt)
             .IsRequired();
@@ -29,6 +34,9 @@ public class ChildDepartmentConfiguration : IEntityTypeConfiguration<ChildDepart
             .HasMaxLength(100);
         
         builder.Property(cda => cda.IsActive)
+            .IsRequired();
+
+        builder.Property(x => x.KindergartenId)
             .IsRequired();
     }
 }

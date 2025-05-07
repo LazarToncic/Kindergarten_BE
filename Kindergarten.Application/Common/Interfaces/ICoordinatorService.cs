@@ -6,4 +6,5 @@ public interface ICoordinatorService
     public Task<bool> CheckIfCoordinatorWorksInSameKindergarten2(string kindergartenName);
 
     public Task<bool> CheckIfEmployeeIsBeingPromotedToCoordinator(Guid coordinatorId);
+    Task<Guid> GetKindergartenIdForCoordinator(string userId, CancellationToken cancellationToken);
 }

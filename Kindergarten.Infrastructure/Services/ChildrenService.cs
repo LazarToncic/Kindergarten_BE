@@ -103,24 +103,20 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
         }
     }
 
-    /*public async Task<GetUnassignedChildrenDto> GetUnassignedChildren(Guid? kindergartenId, string? firstName,
+    public async Task<GetUnassignedChildrenListDto> GetUnassignedChildren(Guid? kindergartenId, string? firstName,
         string? lastName, CancellationToken cancellationToken)
     {
         var roles = currentUserService.Roles!;
 
-        // 1) Početni query: sva deca koja trenutno **nemaju** aktivno dodeljivanje
         IQueryable<Child> query = dbContext.Children
-            .Where(c => !c.DepartmentAssignments.Any(da => da.IsActive));
+            .Where(c => !c.DepartmentAssignments.Any());
 
-        // 2) Filtriranje po vrsti korisnika
         if (roles.Contains(RolesExtensions.Owner) || roles.Contains(RolesExtensions.Manager))
         {
-            // Owner/Manager mogu da pretražuju po bilo kom vrtiću:
             if (kindergartenId.HasValue)
             {
                 var kgId = kindergartenId.Value;
                 query = query.Where(c =>
-                    // ne postoji nijedna aktivna dodela kojoj department pripada traženom vrtiću
                     !c.DepartmentAssignments
                         .Any(cd =>
                             cd.IsActive
@@ -129,11 +125,9 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
                                 .Any(kd => kd.KindergartenId == kgId)
                         ));
             }
-            // ako ne pošalju kindergartenId, ostaje sva deca iz svih vrtića
         }
         else if (roles.Contains(RolesExtensions.Coordinator))
         {
-            // Coordinator vidi samo decu iz svog vrtića:
             var myKgId = await coordinatorService
                 .GetKindergartenIdForCoordinator(currentUserService.UserId!, cancellationToken);
 
@@ -146,25 +140,25 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
             throw new UnauthorizedAccessException("You are not authorized to view unassigned children.");
         }
 
-        // 3) Dodatni filteri po imenu i prezimenu
         if (!string.IsNullOrWhiteSpace(firstName))
             query = query.Where(c => c.FirstName.Contains(firstName!));
 
         if (!string.IsNullOrWhiteSpace(lastName))
             query = query.Where(c => c.LastName.Contains(lastName!));
 
-        // 4) Projekcija u DTO i izvršavanje upita
-        var list = await query
-            .Select(c => new ChildDto(
-                c.Id,
-                c.FirstName,
-                c.LastName,
-                c.YearOfBirth
-            ))
+        var children = await query
+            .Include(c => c.ChildAllergies)
+            .ThenInclude(ca => ca.Allergy)
+            .Include(c => c.ChildMedicalConditions)
+            .ThenInclude(cm => cm.MedicalCondition)
             .ToListAsync(cancellationToken);
 
-        return new GetUnassignedChildrenDto(list);
-    }*/
+        var list = children
+            .Select(ChildrenMapper.ChildToGetUnassignedChildrenDto)
+            .ToList();
+
+        return new GetUnassignedChildrenListDto(list);
+    }
 
     private async Task<Guid> GetParentIdWithUserId(string userId, CancellationToken cancellationToken)
     {

@@ -12,6 +12,6 @@ public interface IChildrenService
         List<string>? allergies, bool hasMedicalIssues, List<string>? medicalConditions,
         ParentChildRelationship parentChildRelationship,CancellationToken cancellationToken);
 
-    /*Task<GetUnassignedChildrenDto> GetUnassignedChildren(Guid? kindergartenId, string? firstName, string? lastName,
-        CancellationToken cancellationToken);*/
+    Task<GetUnassignedChildrenListDto> GetUnassignedChildren(Guid? kindergartenId, string? firstName, string? lastName,
+        CancellationToken cancellationToken);
 }

@@ -1,3 +1,5 @@
+using Kindergarten.Application.Common.Exceptions;
+using Kindergarten.Application.Common.Extensions;
 using Kindergarten.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,5 +48,19 @@ public class CoordinatorService(ICurrentUserService currentUserService, IKinderg
     {
         return await dbContext.EmployeePositions
             .AnyAsync(x => x.Id == coordinatorId && x.Name == "Coordinator");
+    }
+
+    public async Task<Guid> GetKindergartenIdForCoordinator(string userId, CancellationToken cancellationToken)
+    {
+        var employee = await dbContext.Employees
+            .Include(e => e.EmployeePosition)
+            .FirstOrDefaultAsync(e =>
+                    e.UserId == userId &&
+                    e.EmployeePosition.Name == EmployeeExtension.Coordinator, cancellationToken);
+
+        if (employee == null)
+            throw new NotFoundException("Coordinator not found.");
+
+        return employee.KindergartenId;
     }
 }
