@@ -1,3 +1,4 @@
+using Kindergarten.Application.Common.Dto.Department;
 using Kindergarten.Application.Common.Exceptions;
 using Kindergarten.Application.Common.Extensions;
 using Kindergarten.Application.Common.Interfaces;
@@ -62,6 +63,12 @@ public class DepartmentService(IKindergartenDbContext dbContext) : IDepartmentSe
         await dbContext.DepartmentEmployees
             .Where(x => x.EmployeeId.Equals(employeeId))
             .ExecuteDeleteAsync(cancellationToken);
+    }
+
+    public Task<DepartmentsForUnassignedChildrenListDto> GetDepartmentsForUnassignedChildrenList(Guid childrenId, CancellationToken cancellationToken)
+    {
+        // TODO OVDE SI STAO - GetChildrenAge sa ovom metodom u servisu decijem nadji koliko dete ima godina
+        throw new NotImplementedException();
     }
 
     private async Task<Department> GetDepartment(string departmentName)

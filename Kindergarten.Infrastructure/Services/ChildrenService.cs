@@ -13,15 +13,17 @@ namespace Kindergarten.Infrastructure.Services;
 
 public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService allergyService, 
     IMedicalConditionService medicalConditionService, ICurrentUserService currentUserService, 
-    ICoordinatorService coordinatorService) : IChildrenService
+    ICoordinatorService coordinatorService, IKindergartenService kindergartenService) : IChildrenService
 {
     public async Task AddChildrenThroughParentRequest(string jsonChildren, Guid parentId,
-        ParentChildRelationship relationship, CancellationToken cancellationToken)
+        ParentChildRelationship relationship, string preferredKindergarten, CancellationToken cancellationToken)
     {
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var childrenDtos = JsonSerializer.Deserialize<List<ParentRequestChildDto>>(jsonChildren, options);
         
         var createdChildren = new List<NewChildrenThroughParentRequestDto>();
+        
+        var preferredKindergartenId = await kindergartenService.GetKindergartenId(preferredKindergarten);
         
         foreach (var childDto in childrenDtos)
         {
@@ -29,7 +31,8 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
             {
                 FirstName = childDto.FirstName,
                 LastName = childDto.LastName,
-                YearOfBirth = childDto.DateOfBirth
+                YearOfBirth = childDto.DateOfBirth,
+                RequestedKindergartenId = preferredKindergartenId
             };
             
             dbContext.Children.Add(child);
@@ -132,8 +135,8 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
                 .GetKindergartenIdForCoordinator(currentUserService.UserId!, cancellationToken);
 
             query = query.Where(c =>
-                !c.DepartmentAssignments
-                    .Any(da => da.KindergartenId == myKgId && da.IsActive));
+                c.RequestedKindergartenId == myKgId &&
+                !c.DepartmentAssignments.Any());
         }
         else
         {
@@ -158,6 +161,11 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
             .ToList();
 
         return new GetUnassignedChildrenListDto(list);
+    }
+
+    public Task<int> GetChildrenAge(Guid childrenId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 
     private async Task<Guid> GetParentIdWithUserId(string userId, CancellationToken cancellationToken)

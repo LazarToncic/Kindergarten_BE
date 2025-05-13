@@ -35,9 +35,9 @@ public class ChildConfiguration : IEntityTypeConfiguration<Child>
             .HasForeignKey(x => x.ChildId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        /*builder.HasOne(x => x.RequestedKindergarten)
+        builder.HasOne(x => x.RequestedKindergarten)
             .WithMany()
             .HasForeignKey(x => x.RequestedKindergartenId)
-            .OnDelete(DeleteBehavior.Restrict);*/
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
