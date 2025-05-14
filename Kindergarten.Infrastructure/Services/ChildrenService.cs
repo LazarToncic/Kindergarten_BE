@@ -163,9 +163,21 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
         return new GetUnassignedChildrenListDto(list);
     }
 
-    public Task<int> GetChildrenAge(Guid childrenId, CancellationToken cancellationToken)
+    public async Task<int> GetChildrenAge(Guid childrenId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var child = await dbContext.Children
+            .FirstOrDefaultAsync(c => c.Id == childrenId, cancellationToken);
+
+        if (child is null)
+            throw new NotFoundException("Child not found.");
+
+        var birthDate = child.YearOfBirth.ToDateTime(TimeOnly.MinValue);
+        var today = DateTime.Today;
+
+        var age = today.Year - birthDate.Year;
+        if (birthDate > today.AddYears(-age)) age--;
+
+        return age;
     }
 
     private async Task<Guid> GetParentIdWithUserId(string userId, CancellationToken cancellationToken)

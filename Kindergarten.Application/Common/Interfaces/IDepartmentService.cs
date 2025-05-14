@@ -11,4 +11,5 @@ public interface IDepartmentService
     public Task DeleteDepartmentsForNewCoordinator(Guid employeeId, CancellationToken cancellationToken);
     
     public Task<DepartmentsForUnassignedChildrenListDto> GetDepartmentsForUnassignedChildrenList(Guid childrenId, CancellationToken cancellationToken);
+    public Task CreateDepartment(Guid kindergartenId, int ageGroup, int maximumCapacity, string name, CancellationToken cancellationToken);
 }

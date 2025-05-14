@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kindergarten.Infrastructure.Services;
 
-public class DepartmentService(IKindergartenDbContext dbContext) : IDepartmentService
+public class DepartmentService(IKindergartenDbContext dbContext, IChildrenService childrenService) : IDepartmentService
 {
     public async Task<bool> AssignNewEmployeeToDepartment(string nameOfDepartment, string positionInDepartment, Guid newEmployeeId,string strongestQualification, CancellationToken cancellationToken)
     {
@@ -65,10 +65,58 @@ public class DepartmentService(IKindergartenDbContext dbContext) : IDepartmentSe
             .ExecuteDeleteAsync(cancellationToken);
     }
 
-    public Task<DepartmentsForUnassignedChildrenListDto> GetDepartmentsForUnassignedChildrenList(Guid childrenId, CancellationToken cancellationToken)
+    public async Task<DepartmentsForUnassignedChildrenListDto> GetDepartmentsForUnassignedChildrenList(Guid childrenId, CancellationToken cancellationToken)
     {
-        // TODO OVDE SI STAO - GetChildrenAge sa ovom metodom u servisu decijem nadji koliko dete ima godina
-        throw new NotImplementedException();
+        var childAge = await childrenService.GetChildrenAge(childrenId, cancellationToken);
+
+        var departments = await dbContext.Departments
+            .Where(x => x.AgeGroup == childAge)
+            .Where(d => d.MaximumCapacity > d.Capacity)
+            .Select(d => new DepartmentDto(
+                d.Id,
+                d.AgeGroup,
+                d.Capacity,
+                d.Name
+            ))
+            .ToListAsync(cancellationToken);
+
+        return new DepartmentsForUnassignedChildrenListDto(departments);
+    }
+
+    public async Task CreateDepartment(Guid kindergartenId, int ageGroup, int maximumCapacity, string name,
+        CancellationToken cancellationToken)
+    {
+
+        var department = new Department
+        {
+            AgeGroup = ageGroup,
+            MaximumCapacity = maximumCapacity,
+            Name = name,
+            Capacity = 0
+        };
+
+    var existingDepartment = await dbContext.Departments
+            .Where(x => x.Name == name)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingDepartment != null)
+        {
+            throw new ConflictException("Department with this name already exists.",
+                new {existingDepartment.Name});
+        }
+        
+        dbContext.Departments.Add(department);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var kindergartenDepartment = new KindergartenDepartment
+        {
+            DepartmentId = department.Id,
+            KindergartenId = kindergartenId
+        };
+
+        dbContext.KindergartenDepartments.Add(kindergartenDepartment);
+        
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<Department> GetDepartment(string departmentName)

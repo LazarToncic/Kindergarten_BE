@@ -14,8 +14,10 @@ public class CreateDepartmentDtoValidator : AbstractValidator<CreateDepartmentDt
         RuleFor(x => x.AgeGroup)
             .InclusiveBetween(0, 7).WithMessage("Age group must be between 1 and 7.");
 
-        RuleFor(x => x.KindergartenName)
-            .NotEmpty().WithMessage("Kindergarten name is required.")
-            .MaximumLength(30).WithMessage("Kindergarten name must not exceed 30 characters.");
+        RuleFor(x => x.KindergartenId)
+            .NotEmpty().WithMessage("Kindergarten ID is required.");
+
+        RuleFor(x => x.MaximumCapacity)
+            .NotEmpty().WithMessage("MaximumCapacity is required.");
     }
 }

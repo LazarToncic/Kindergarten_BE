@@ -10,7 +10,7 @@ public class ChildController : ApiBaseController
 {
     [HttpPost]
     [Authorize(Roles = "Parent")]
-    public async Task<ActionResult> EnrollNewChild([FromQuery] EnrollNewChildCommand command)
+    public async Task<ActionResult> EnrollNewChild([FromBody] EnrollNewChildCommand command)
     {
         await Mediator.Send(command);
         return Ok();
@@ -22,5 +22,12 @@ public class ChildController : ApiBaseController
     {
         var result = await Mediator.Send(query);
         return Ok(result);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> AssignChildToDepartment([FromBody] AssignChildToDepartmentCommand command)
+    {
+        await Mediator.Send(command);
+        return Ok();
     }
 }
