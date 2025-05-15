@@ -25,7 +25,16 @@ public class ChildController : ApiBaseController
     }
 
     [HttpPost]
+    [Authorize(Roles = "Coordinator,Manager,Owner")]
     public async Task<ActionResult> AssignChildToDepartment([FromBody] AssignChildToDepartmentCommand command)
+    {
+        await Mediator.Send(command);
+        return Ok();
+    }
+    
+    [HttpPost]
+    [Authorize(Roles = "Coordinator,Manager,Owner")]
+    public async Task<ActionResult> UnassignChildFromDepartment([FromBody] UnassignChildFromDepartmentCommand command)
     {
         await Mediator.Send(command);
         return Ok();

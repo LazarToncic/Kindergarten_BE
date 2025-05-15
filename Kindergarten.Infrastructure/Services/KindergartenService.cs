@@ -30,4 +30,17 @@ public class KindergartenService(IKindergartenDbContext dbContext) : IKindergart
 
         return kindergarten.Name;
     }
+
+    public Task<Guid> GetKindergartenIdWithDepartmentId(Guid departmentId)
+    {
+        var kindergartenId = dbContext.KindergartenDepartments
+            .Where(x => x.DepartmentId.Equals(departmentId))
+            .Select(x => x.KindergartenId)
+            .FirstOrDefaultAsync();
+        
+        if (kindergartenId == null)
+            throw new NotFoundException("Kindergarten with this Department Id doesnt exist");
+
+        return kindergartenId;
+    }
 }

@@ -180,6 +180,23 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
         return age;
     }
 
+    public async Task AssignChildToDepartment(Guid childId, Guid departmentId, CancellationToken cancellationToken)
+    {
+        var kindergartenId = await kindergartenService.GetKindergartenIdWithDepartmentId(departmentId);
+
+        var childDepartmentAssigned = new ChildDepartment
+        {
+            ChildId = childId,
+            DepartmentId = departmentId,
+            KindergartenId = kindergartenId,
+            IsActive = true,
+            AssignedByUserId = currentUserService.UserId!,
+        };
+        
+        dbContext.ChildDepartments.Add(childDepartmentAssigned);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task<Guid> GetParentIdWithUserId(string userId, CancellationToken cancellationToken)
     {
         if (userId == null)

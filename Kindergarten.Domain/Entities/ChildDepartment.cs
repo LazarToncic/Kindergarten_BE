@@ -14,6 +14,9 @@ public class ChildDepartment
     
     public string AssignedByUserId { get; set; } = string.Empty;
     
+    public DateTime? UnassignedAt { get; set; }  
+    public string? UnassignedByUserId { get; set; }
+    
     public bool IsActive { get; set; } = true;
     public Guid KindergartenId { get; set; }
     public Kindergarten Kindergarten { get; set; } = null!;

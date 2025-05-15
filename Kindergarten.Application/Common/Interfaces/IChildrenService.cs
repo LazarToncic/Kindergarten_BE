@@ -16,4 +16,8 @@ public interface IChildrenService
         CancellationToken cancellationToken);
     
     Task<int> GetChildrenAge(Guid childrenId, CancellationToken cancellationToken);
+
+    Task AssignChildToDepartment(Guid childId, Guid departmentId, CancellationToken cancellationToken);
+    
+    
 }

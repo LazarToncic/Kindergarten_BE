@@ -1,13 +1,14 @@
+using Kindergarten.Application.Common.Interfaces;
 using MediatR;
 
 namespace Kindergarten.Application.Child.Commands;
 
 public record AssignChildToDepartmentCommand(Guid ChildId, Guid DepartmentId) : IRequest;
 
-public class AssignChildToDepartmentCommandHandler : IRequestHandler<AssignChildToDepartmentCommand>
+public class AssignChildToDepartmentCommandHandler(IChildrenService childrenService) : IRequestHandler<AssignChildToDepartmentCommand>
 {
-    public Task Handle(AssignChildToDepartmentCommand request, CancellationToken cancellationToken)
+    public async Task Handle(AssignChildToDepartmentCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await childrenService.AssignChildToDepartment(request.ChildId, request.DepartmentId, cancellationToken);
     }
 }
