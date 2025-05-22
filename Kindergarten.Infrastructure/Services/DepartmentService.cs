@@ -119,6 +119,11 @@ public class DepartmentService(IKindergartenDbContext dbContext, IChildrenServic
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public Task UnassignChildFromDepartment(Guid childId, Guid departmentId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<Department> GetDepartment(string departmentName)
     {
         var department = await dbContext.Departments

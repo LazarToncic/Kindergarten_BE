@@ -18,6 +18,6 @@ public interface IChildrenService
     Task<int> GetChildrenAge(Guid childrenId, CancellationToken cancellationToken);
 
     Task AssignChildToDepartment(Guid childId, Guid departmentId, CancellationToken cancellationToken);
-    
-    
+
+    Task<GetChildrenQueryResponseList> GetChildren(Guid? kindergartenId, string? firstName, string? lastName, DateOnly? dateOfBirth, bool? isActive, CancellationToken cancellationToken);
 }

@@ -1,5 +1,6 @@
 using Kindergarten.Application.Common.Dto.Employee;
 using Kindergarten.Application.Common.Exceptions;
+using Kindergarten.Application.Common.Extensions;
 using Kindergarten.Application.Common.Interfaces;
 using Kindergarten.Domain.Entities;
 using Kindergarten.Infrastructure.Identity;
@@ -9,7 +10,7 @@ namespace Kindergarten.Infrastructure.Services;
 
 public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserManager userManager, IKindergartenService kindergartenService, 
     IDepartmentService departmentService, IQualificationService qualificationService, ISalaryService salaryService,
-    ICoordinatorService coordinatorService, IRoleService roleService) : IEmployeeService
+    ICoordinatorService coordinatorService, IRoleService roleService, ICurrentUserService currentUserService) : IEmployeeService
 {
     public async Task CreateEmployee(CreateEmployeeDto dto, CancellationToken cancellationToken)
     {
@@ -32,8 +33,16 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
             KindergartenId = kindergartenId
         };
 
-        dbContext.Employees.Add(employee);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            dbContext.Employees.Add(employee);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            Console.WriteLine("Save failed: " + ex.InnerException?.Message ?? ex.Message);
+            throw;
+        }
 
         var setQualifications = await qualificationService.AssignQualificationToNewEmployee(dto.Qualifications, employee.Id, cancellationToken);
 
@@ -106,6 +115,25 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
         }
 
         
+    }
+
+    public async Task<bool> IsTeacherInDepartmentAsync(Guid departmentId, CancellationToken cancellationToken)
+    {
+        var userId = currentUserService.UserId!;
+
+        var employee = await dbContext.Employees
+            .FirstOrDefaultAsync(e => e.UserId.Equals(userId), cancellationToken: cancellationToken);
+
+        if (employee == null)
+            return false;
+
+        return await dbContext.DepartmentEmployees
+            .AnyAsync(de => 
+                de.DepartmentId == departmentId &&
+                de.EmployeeId == employee.Id && 
+                de.RoleInDepartment == EmployeeExtension.Teacher && 
+                employee.KindergartenId == de.Employee.KindergartenId,
+                cancellationToken);
     }
 
     private async Task<string> FindUserId(string emailOrUsername)

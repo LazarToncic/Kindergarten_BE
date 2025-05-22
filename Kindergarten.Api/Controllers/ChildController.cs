@@ -1,5 +1,6 @@
 using Kindergarten.Application.Child.Commands;
 using Kindergarten.Application.Child.Queries;
+using Kindergarten.Application.Department.Commands;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -38,5 +39,13 @@ public class ChildController : ApiBaseController
     {
         await Mediator.Send(command);
         return Ok();
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Coordinator,Manager,Owner")]
+    public async Task<ActionResult> GetChildren([FromQuery] GetChildrenQuery query)
+    {
+        var result = await Mediator.Send(query);
+        return Ok(result);
     }
 }

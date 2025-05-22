@@ -5,6 +5,7 @@ using Kindergarten.Application.Common.Exceptions;
 using Kindergarten.Application.Common.Extensions;
 using Kindergarten.Application.Common.Interfaces;
 using Kindergarten.Application.Common.Mappers.Children;
+using Kindergarten.Application.Common.Repositories;
 using Kindergarten.Domain.Entities;
 using Kindergarten.Domain.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ namespace Kindergarten.Infrastructure.Services;
 
 public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService allergyService, 
     IMedicalConditionService medicalConditionService, ICurrentUserService currentUserService, 
-    ICoordinatorService coordinatorService, IKindergartenService kindergartenService) : IChildrenService
+    ICoordinatorService coordinatorService, IKindergartenService kindergartenService, IDepartmentEmployeeRepository departmentEmployeeRepository) : IChildrenService
 {
     public async Task AddChildrenThroughParentRequest(string jsonChildren, Guid parentId,
         ParentChildRelationship relationship, string preferredKindergarten, CancellationToken cancellationToken)
@@ -195,6 +196,157 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
         
         dbContext.ChildDepartments.Add(childDepartmentAssigned);
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<GetChildrenQueryResponseList> GetChildren(Guid? kindergartenId, string? firstName, string? lastName, DateOnly? dateOfBirth,
+         bool? isActive, CancellationToken cancellationToken)
+    {
+        var roles = currentUserService.Roles!;
+        
+        var isOwnerOrManager = roles.Contains(RolesExtensions.Owner)
+                               || roles.Contains(RolesExtensions.Manager);
+        var isCoordinator    = !isOwnerOrManager
+                               && roles.Contains(RolesExtensions.Coordinator);
+        var isEmployeeOnly   = !isOwnerOrManager
+                               && !isCoordinator
+                               && roles.Contains(RolesExtensions.Employee);
+        
+    IQueryable<Child> baseQuery = dbContext.Children;
+
+    // 1) Role-based + kindergartenId + isActive filters
+    if (isOwnerOrManager)
+    {
+        if (kindergartenId.HasValue)
+        {
+            baseQuery = baseQuery.Where(c =>
+                c.DepartmentAssignments.Any(da =>
+                    da.KindergartenId == kindergartenId.Value &&
+                    (!isActive.HasValue || da.IsActive == isActive.Value)
+                ));
+        }
+    }
+    else if (isCoordinator)
+    {
+        var myKgId = await coordinatorService
+            .GetKindergartenIdForCoordinator(currentUserService.UserId!, cancellationToken);
+
+        baseQuery = baseQuery.Where(c =>
+            c.DepartmentAssignments.Any(da =>
+                da.KindergartenId == myKgId &&
+                (!isActive.HasValue || da.IsActive == isActive.Value)
+            ));
+    }
+    else if (isEmployeeOnly)
+    {
+        // leave baseQuery untouched for now
+    }
+    else
+    {
+        throw new UnauthorizedAccessException("You are not authorized to view children.");
+    }
+
+    // 2) Additional filters
+    if (!string.IsNullOrWhiteSpace(firstName))
+        baseQuery = baseQuery.Where(c => c.FirstName.Contains(firstName));
+    if (!string.IsNullOrWhiteSpace(lastName))
+        baseQuery = baseQuery.Where(c => c.LastName.Contains(lastName));
+    if (dateOfBirth.HasValue)
+        baseQuery = baseQuery.Where(c => c.YearOfBirth == dateOfBirth.Value);
+
+    // 3) Eager loading
+    var queryWithIncludes = baseQuery
+        .Include(c => c.DepartmentAssignments)
+            .ThenInclude(da => da.Department)
+                .ThenInclude(d => d.KindergartenDepartments)
+        .Include(c => c.DepartmentAssignments)
+            .ThenInclude(da => da.Department)
+                .ThenInclude(d => d.DepartmentEmployees)
+                    .ThenInclude(de => de.Employee)
+                        .ThenInclude(e => e.User)
+        .Include(c => c.ParentChildren)
+            .ThenInclude(pc => pc.Parent)
+                .ThenInclude(p => p.User);
+
+    // 4) Materialize into a list
+    List<Child> childrenList;
+    
+    if (isEmployeeOnly)
+    {
+        var allKids= await queryWithIncludes.ToListAsync(cancellationToken);
+        childrenList = new List<Child>();
+        var currentUserId= currentUserService.UserId!;
+
+        foreach (var kid in allKids)
+        {
+            var assignment = kid.DepartmentAssignments
+                .FirstOrDefault(da => !isActive.HasValue || da.IsActive == isActive.Value);
+            if (assignment == null) 
+                continue;
+
+            // 1) izvuci departmentId i kindergartenId iz assignment
+            var departmentId = assignment.DepartmentId;
+            var kindergartenIdForRep = assignment.Department
+                .KindergartenDepartments
+                .Single() 
+                .KindergartenId;
+
+            // 2) pozovi repozitorijum sa sva tri parametra
+            var isTeacher = await departmentEmployeeRepository
+                .IsTeacherInDepartmentAsync(departmentId, currentUserId, kindergartenIdForRep, cancellationToken);
+
+            if (isTeacher)
+                childrenList.Add(kid);
+            
+        }
+    }
+    else
+    {
+        childrenList = await queryWithIncludes.ToListAsync(cancellationToken);
+    }
+
+    // 5) Project to DTO
+    var result = childrenList.Select(c =>
+    {
+        var assignment = c.DepartmentAssignments
+            .FirstOrDefault(da => !isActive.HasValue || da.IsActive == isActive.Value);
+        var dept = assignment?.Department;
+        var kg   = dept?.KindergartenDepartments.FirstOrDefault()?.Kindergarten;
+        var teacherUser = dept?
+            .DepartmentEmployees
+            .FirstOrDefault(de => de.RoleInDepartment == EmployeeExtension.Teacher)
+            ?.Employee.User;
+
+        var motherUser = c.ParentChildren
+            .FirstOrDefault(pc => pc.Relationship == ParentChildRelationship.Mother)
+            ?.Parent.User;
+        var fatherUser = c.ParentChildren
+            .FirstOrDefault(pc => pc.Relationship == ParentChildRelationship.Father)
+            ?.Parent.User;
+
+        return new GetChildrenQueryResponse(
+            c.Id,
+            c.FirstName,
+            c.LastName,
+            c.YearOfBirth,
+            kg?.Name   ?? "Unknown",
+            dept?.Name ?? "Unknown",
+            assignment?.DepartmentId ?? Guid.Empty,
+            teacherUser != null
+                ? $"{teacherUser.FirstName} {teacherUser.LastName}"
+                : "Unknown",
+            motherUser != null
+                ? $"{motherUser.FirstName} {motherUser.LastName}"
+                : "Unknown",
+            fatherUser != null
+                ? $"{fatherUser.FirstName} {fatherUser.LastName}"
+                : "Unknown",
+            assignment?.IsActive ?? false
+            
+        );
+    }).ToList();
+
+    return new GetChildrenQueryResponseList(result);
+        
     }
 
     private async Task<Guid> GetParentIdWithUserId(string userId, CancellationToken cancellationToken)

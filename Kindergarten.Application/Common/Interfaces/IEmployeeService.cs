@@ -6,4 +6,5 @@ public interface IEmployeeService
 {
     Task CreateEmployee(CreateEmployeeDto dto, CancellationToken cancellationToken);
     Task UpdateEmployeePosition(UpdateEmployeePositionDto dto, CancellationToken cancellationToken);
+    Task<bool> IsTeacherInDepartmentAsync(Guid departmentId, CancellationToken cancellationToken);
 }

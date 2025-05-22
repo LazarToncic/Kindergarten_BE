@@ -12,4 +12,5 @@ public interface IDepartmentService
     
     public Task<DepartmentsForUnassignedChildrenListDto> GetDepartmentsForUnassignedChildrenList(Guid childrenId, CancellationToken cancellationToken);
     public Task CreateDepartment(Guid kindergartenId, int ageGroup, int maximumCapacity, string name, CancellationToken cancellationToken);
+    public Task UnassignChildFromDepartment(Guid childId, Guid departmentId, CancellationToken cancellationToken);
 }

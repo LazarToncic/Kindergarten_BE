@@ -1,8 +1,10 @@
 using Kindergarten.Application.Common.Interfaces;
+using Kindergarten.Application.Common.Repositories;
 using Kindergarten.Domain.Entities;
 using Kindergarten.Infrastructure.Configuration;
 using Kindergarten.Infrastructure.Context;
 using Kindergarten.Infrastructure.Identity;
+using Kindergarten.Infrastructure.Repositories;
 using Kindergarten.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +46,8 @@ public static class DependencyInjection
             services.AddScoped<IChildrenService, ChildrenService>();
             services.AddScoped<IAllergyService, AllergyService>();
             services.AddScoped<IMedicalConditionService, MedicalConditionService>();
-        
+
+            services.AddScoped<IDepartmentEmployeeRepository, DepartmentEmployeeRepository>();
 
         return services;
     }
