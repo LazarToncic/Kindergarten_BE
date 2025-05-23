@@ -42,7 +42,7 @@ public class ChildController : ApiBaseController
     }
 
     [HttpGet]
-    [Authorize(Roles = "Coordinator,Manager,Owner")]
+    [Authorize(Roles = "Employee,Coordinator,Manager,Owner")]
     public async Task<ActionResult> GetChildren([FromQuery] GetChildrenQuery query)
     {
         var result = await Mediator.Send(query);

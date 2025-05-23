@@ -18,6 +18,9 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
             {typeof(NotFoundException), HandleNotFoundException},
             {typeof(UnauthorizedAccessException), HandleUnauthorizedAccessException},
             {typeof(ConflictException), HandleConflictException},
+            {typeof(EmployeeNotQualifiedException), HandleEmployeeNotQualifiedException},
+            {typeof(ChildAssignemntNotActiveException), HandleChildAssignemntNotActiveException},
+            {typeof(TeacherNotTeachingDepartmentException), HandleTeacherNotTeachingDepartmentException},
         };
     }
 
@@ -70,6 +73,57 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
         context.Result = new ObjectResult(details)
         {
             StatusCode = StatusCodes.Status401Unauthorized
+        };
+        
+        context.ExceptionHandled = true;
+    }
+    
+    private void HandleEmployeeNotQualifiedException(ExceptionContext context)
+    {
+        var details = new ProblemDetails
+        {
+            Status = StatusCodes.Status401Unauthorized,
+            Title = "Unauthorized",
+            Type = "https://tools.ietf.org/html/rfc7231#section-3.1"
+        };
+
+        context.Result = new ObjectResult(details)
+        {
+            StatusCode = StatusCodes.Status401Unauthorized
+        };
+        
+        context.ExceptionHandled = true;
+    }
+    
+    private void HandleTeacherNotTeachingDepartmentException(ExceptionContext context)
+    {
+        var details = new ProblemDetails
+        {
+            Status = StatusCodes.Status401Unauthorized,
+            Title = "Unauthorized",
+            Type = "https://tools.ietf.org/html/rfc7231#section-3.1"
+        };
+
+        context.Result = new ObjectResult(details)
+        {
+            StatusCode = StatusCodes.Status401Unauthorized
+        };
+        
+        context.ExceptionHandled = true;
+    }
+    
+    private void HandleChildAssignemntNotActiveException(ExceptionContext context)
+    {
+        var details = new ProblemDetails
+        {
+            Status = StatusCodes.Status401Unauthorized,
+            Title = "Unauthorized",
+            Type = "https://tools.ietf.org/html/rfc7231#section-3.1"
+        };
+
+        context.Result = new ObjectResult(details)
+        {
+            StatusCode = StatusCodes.Status406NotAcceptable
         };
         
         context.ExceptionHandled = true;

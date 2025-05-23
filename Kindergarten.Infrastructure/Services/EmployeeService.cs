@@ -44,7 +44,7 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
             throw;
         }
 
-        var setQualifications = await qualificationService.AssignQualificationToNewEmployee(dto.Qualifications, employee.Id, cancellationToken);
+        bool setQualifications = await qualificationService.AssignQualificationToNewEmployee(dto.Qualifications, employee.Id, cancellationToken);
 
         var strongestQualification = await salaryService.CreateSalaryForNewEmployee(dto.Qualifications,dto.EmployeePositionName, employee.Id, cancellationToken);
         
@@ -54,7 +54,6 @@ public class EmployeeService(IKindergartenDbContext dbContext, ApplicationUserMa
             throw new ConflictException("this user cannot get a job", 
                 new {});
 
-        // moramo i u userRoles da dodamo rolu Coordinator ili Employee
         await roleService.AddRoleToEmployeeAsync(userId, dto.EmployeePositionName, cancellationToken);
     }
 

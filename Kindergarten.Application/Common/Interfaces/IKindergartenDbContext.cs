@@ -31,4 +31,5 @@ public interface IKindergartenDbContext
     DbSet<MedicalCondition> MedicalConditions { get; }
     DbSet<ChildMedicalCondition> ChildMedicalConditions { get; }
     DbSet<ChildDepartment> ChildDepartments { get; }
+    DbSet<ChildWithdrawalRequest> ChildWithdrawalRequests { get; }
 }

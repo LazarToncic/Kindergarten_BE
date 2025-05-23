@@ -47,4 +47,5 @@ public class KindergartenDbContext(DbContextOptions<KindergartenDbContext> optio
     public DbSet<MedicalCondition> MedicalConditions => Set<MedicalCondition>();
     public DbSet<ChildMedicalCondition> ChildMedicalConditions => Set<ChildMedicalCondition>();
     public DbSet<ChildDepartment> ChildDepartments => Set<ChildDepartment>();
+    public DbSet<ChildWithdrawalRequest> ChildWithdrawalRequests => Set<ChildWithdrawalRequest>();
 }

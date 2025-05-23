@@ -13,4 +13,6 @@ public class Child
     public ICollection<ChildAllergy> ChildAllergies { get; set; } = new List<ChildAllergy>();
     public List<ChildMedicalCondition> ChildMedicalConditions { get; set; } = new List<ChildMedicalCondition>();
     public List<ChildDepartment> DepartmentAssignments { get; set; } = new List<ChildDepartment>();
+    public ICollection<ChildWithdrawalRequest> WithdrawalRequests { get; set; }
+        = new List<ChildWithdrawalRequest>();
 }

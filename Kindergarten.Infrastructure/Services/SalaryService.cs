@@ -71,6 +71,9 @@ public class SalaryService(IKindergartenDbContext dbContext, IQualificationServi
         } else if (strongestQualification == EmployeeQualificationsExtensions.Master)
         {
             newAmount = baseAmount + 16000;
+        } else if (strongestQualification == EmployeeQualificationsExtensions.HighSchool)
+        {
+            newAmount = baseAmount;
         }
         
         return newAmount;
