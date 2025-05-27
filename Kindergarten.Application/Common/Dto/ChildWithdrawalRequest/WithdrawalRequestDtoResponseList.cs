@@ -1,0 +1,3 @@
+namespace Kindergarten.Application.Common.Dto.ChildWithdrawalRequest;
+
+public record WithdrawalRequestDtoResponseList(List<WithdrawalRequestDtoResponse>? WithdrawalRequestDtoResponses);

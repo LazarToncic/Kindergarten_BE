@@ -1,13 +1,17 @@
+using Kindergarten.Application.Common.Dto.ChildWithdrawalRequest;
 using Kindergarten.Application.Common.Exceptions;
+using Kindergarten.Application.Common.Extensions;
 using Kindergarten.Application.Common.Interfaces;
+using Kindergarten.Application.Common.Mappers.ChildWithdrawal;
 using Kindergarten.Application.Common.Repositories;
 using Kindergarten.Domain.Entities;
+using Kindergarten.Domain.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kindergarten.Infrastructure.Services;
 
 public class ChildWithdrawalService(IKindergartenDbContext dbContext ,ICurrentUserService currentUserService,
-    IDepartmentEmployeeRepository departmentEmployeeRepository) : IChildWithdrawalService
+    IDepartmentEmployeeRepository departmentEmployeeRepository, ICoordinatorService coordinatorService) : IChildWithdrawalService
 {
     public async Task CreateChildWithdrawalAsync(Guid childId, string? reason, CancellationToken cancellationToken)
     {
@@ -50,5 +54,62 @@ public class ChildWithdrawalService(IKindergartenDbContext dbContext ,ICurrentUs
 
         dbContext.ChildWithdrawalRequests.Add(childWithdrawalRequest);
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<WithdrawalRequestDtoResponseList> GetChildWithdrawalsAsync(Guid? kindergartenId, string? firstName,
+        string? lastName,
+        ChildWithdrawalRequestStatus? status, CancellationToken cancellationToken)
+    {
+        var userId = currentUserService.UserId!;
+        var roles = currentUserService.Roles;
+
+        var query = dbContext.ChildWithdrawalRequests
+            .AsNoTracking()
+            .Include(x => x.Child)
+                .ThenInclude(x => x.ParentChildren)
+                .ThenInclude(x => x.Parent)
+                .ThenInclude(x => x.User)
+            .Include(x => x.RequestedByUser)
+            .Include(x => x.ReviewedByUser)
+            .Include(x => x.Child)
+                .ThenInclude(x => x.DepartmentAssignments)
+                .ThenInclude(x => x.Department)
+                .ThenInclude(x => x.DepartmentEmployees)
+                .ThenInclude(x => x.Employee)
+                .ThenInclude(x => x.User)
+            .Include(r => r.Child)
+                .ThenInclude(c => c.DepartmentAssignments)
+                .ThenInclude(da => da.Kindergarten)
+            .Where(x => true);
+
+        if (roles!.Contains(RolesExtensions.Owner) || roles!.Contains(RolesExtensions.Manager))
+        {
+            if (kindergartenId.HasValue)
+            {
+                query = query
+                    .Where(r => r.Child.DepartmentAssignments.Any(da => da.KindergartenId == kindergartenId.Value));
+            }
+        } else if (roles.Contains(RolesExtensions.Coordinator))
+        {
+            var kindergartenIdCoordinator = await coordinatorService.GetKindergartenIdForCoordinator(userId, cancellationToken);
+            query = query.Where(r => r.Child.DepartmentAssignments.Any(da => da.KindergartenId == kindergartenIdCoordinator));
+        }
+        else
+        {
+            throw new UnauthorizedAccessException("You dont have access.");
+        }
+        
+        if (!string.IsNullOrWhiteSpace(firstName))
+            query = query.Where(r => r.Child.FirstName.Contains(firstName));
+        
+        if (!string.IsNullOrWhiteSpace(lastName))
+            query = query.Where(r => r.Child.LastName.Contains(lastName));
+        
+        if (status.HasValue)
+            query = query.Where(x => x.Status == status.Value);
+
+        var entities = await query.ToListAsync(cancellationToken);
+
+        return entities.ToDtoList();
     }
 }

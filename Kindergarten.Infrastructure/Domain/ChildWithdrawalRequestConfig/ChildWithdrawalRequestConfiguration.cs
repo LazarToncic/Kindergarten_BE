@@ -35,12 +35,12 @@ public class ChildWithdrawalRequestConfiguration : IEntityTypeConfiguration<Chil
             .HasForeignKey(x => x.ChildId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        builder.HasOne<ApplicationUser>()      
+        builder.HasOne(r => r.RequestedByUser)      
             .WithMany()                        
             .HasForeignKey(r => r.RequestedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<ApplicationUser>()   
+        builder.HasOne(r => r.ReviewedByUser)   
             .WithMany()
             .HasForeignKey(r => r.ReviewedByUserId)
             .OnDelete(DeleteBehavior.Restrict);

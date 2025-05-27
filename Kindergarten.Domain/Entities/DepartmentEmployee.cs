@@ -9,4 +9,6 @@ public class DepartmentEmployee
     public Employee Employee { get; set; }
 
     public string RoleInDepartment { get; set; }
+    public bool IsActive  { get; set; } = true;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

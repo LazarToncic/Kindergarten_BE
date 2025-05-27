@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Kindergarten_BE.Api.Converters;
 using Kindergarten_BE.Api.Filters;
 using Kindergarten.Application;
@@ -16,6 +17,7 @@ builder.Services.AddControllers(options =>
     .AddJsonOptions(opts =>
     {
         opts.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+        opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddApplication(builder.Configuration);

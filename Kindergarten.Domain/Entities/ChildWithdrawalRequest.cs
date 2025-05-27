@@ -13,9 +13,12 @@ public class ChildWithdrawalRequest
     public Guid ChildId { get; set; }
     public Child Child { get; set; } = null!;
     public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
+    public ApplicationUser RequestedByUser { get; set; } = null!;
     public string RequestedByUserId { get; set; } = null!;
     public string? Reason { get; set; }
     public ChildWithdrawalRequestStatus Status { get; set; } = ChildWithdrawalRequestStatus.Pending;
+    
+    public ApplicationUser? ReviewedByUser { get; set; }
     public string? ReviewedByUserId { get; set; }
     public DateTime? ReviewedAt { get; set; }
 }
