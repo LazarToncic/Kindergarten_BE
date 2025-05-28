@@ -26,6 +26,20 @@ public class CoordinatorService(ICurrentUserService currentUserService, IKinderg
 
         return false;
     }
+    
+    public async Task<bool> CheckIfCoordinatorWorksInSameKindergarten(Guid kindergartenId, CancellationToken cancellationToken)
+    {
+        if (currentUserService.Roles!.Contains("Owner") || currentUserService.Roles!.Contains("Manager"))
+            return true;
+
+        if (currentUserService.Roles!.Contains("Coordinator"))
+        {
+            var myKgId = await GetKindergartenIdForCoordinator(currentUserService.UserId!, cancellationToken);
+            return myKgId == kindergartenId;
+        }
+
+        return false;
+    }
 
     public async Task<bool> CheckIfCoordinatorWorksInSameKindergarten2(string kindergartenName)
     {
@@ -42,12 +56,6 @@ public class CoordinatorService(ICurrentUserService currentUserService, IKinderg
         }
 
         return false;
-    }
-
-    public async Task<bool> CheckIfEmployeeIsBeingPromotedToCoordinator(Guid coordinatorId)
-    {
-        return await dbContext.EmployeePositions
-            .AnyAsync(x => x.Id == coordinatorId && x.Name == "Coordinator");
     }
 
     public async Task<Guid> GetKindergartenIdForCoordinator(string userId, CancellationToken cancellationToken)

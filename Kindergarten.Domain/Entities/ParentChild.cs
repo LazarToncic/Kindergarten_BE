@@ -10,4 +10,7 @@ public class ParentChild
     public Guid ChildId { get; set; }
     public Child Child { get; set; }
     public ParentChildRelationship Relationship { get; set; }
+    public bool IsActive { get; set; } = true;
+    public DateTime? DeletedAt { get; set; }
+    public string? DeletedByUserId { get; set; }
 }

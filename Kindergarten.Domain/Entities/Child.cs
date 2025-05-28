@@ -8,6 +8,10 @@ public class Child
     public string LastName { get; set; }
     public DateOnly YearOfBirth { get; set; }
     public Guid RequestedKindergartenId { get; set; }          
+    
+    public bool IsActive { get; set; } = true;
+    public DateTime? DeletedAt { get; set; }
+    public string? DeletedByUserId { get; set; }
     public Kindergarten RequestedKindergarten { get; set; } = null!;
     public List<ParentChild> ParentChildren { get; set; } = new List<ParentChild>();
     public ICollection<ChildAllergy> ChildAllergies { get; set; } = new List<ChildAllergy>();

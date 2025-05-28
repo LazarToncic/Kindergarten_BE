@@ -11,7 +11,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Kindergarten.Infrastructure.Services;
 
 public class ChildWithdrawalService(IKindergartenDbContext dbContext ,ICurrentUserService currentUserService,
-    IDepartmentEmployeeRepository departmentEmployeeRepository, ICoordinatorService coordinatorService) : IChildWithdrawalService
+    IDepartmentEmployeeRepository departmentEmployeeRepository, ICoordinatorService coordinatorService,
+    IDepartmentAssignmentService departmentAssignmentService, IParentChildService parentChildService) : IChildWithdrawalService
 {
     public async Task CreateChildWithdrawalAsync(Guid childId, string? reason, CancellationToken cancellationToken)
     {
@@ -111,5 +112,70 @@ public class ChildWithdrawalService(IKindergartenDbContext dbContext ,ICurrentUs
         var entities = await query.ToListAsync(cancellationToken);
 
         return entities.ToDtoList();
+    }
+
+    public async Task RejectChildWithdrawalsAsync(Guid childWithdrawalRequestId, CancellationToken cancellationToken)
+    {
+        var childRequest = await dbContext.ChildWithdrawalRequests
+            .Include(x => x.Child)
+            .ThenInclude(x => x.DepartmentAssignments)
+            .Where(x => x.Id == childWithdrawalRequestId)
+            .FirstOrDefaultAsync(cancellationToken);
+        
+        if (childRequest == null)
+            throw new NotFoundException("ChildRequest not found.");
+        
+        var activeKgId = childRequest.Child.DepartmentAssignments
+            .First(da => da.IsActive).KindergartenId;
+
+        if (!await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten(
+                activeKgId, cancellationToken))
+            throw new UnauthorizedAccessException("You dont have access to do this.");
+
+        childRequest.Status = ChildWithdrawalRequestStatus.Rejected;
+        childRequest.ReviewedByUserId = currentUserService.UserId!;
+        childRequest.ReviewedAt = DateTime.UtcNow;
+        
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task ApproveChildWithdrawalsAsync(Guid childWithdrawalRequestId, CancellationToken cancellationToken)
+    {
+        var childRequest = await dbContext.ChildWithdrawalRequests
+            .Include(x => x.Child)
+            .ThenInclude(x => x.DepartmentAssignments)
+            .Where(x => x.Id == childWithdrawalRequestId)
+            .FirstOrDefaultAsync(cancellationToken);
+        
+        if (childRequest == null)
+            throw new NotFoundException("ChildRequest not found.");
+        
+        var activeKgId = childRequest.Child.DepartmentAssignments
+            .First(da => da.IsActive).KindergartenId;
+
+        if (!await coordinatorService.CheckIfCoordinatorWorksInSameKindergarten(
+                activeKgId, cancellationToken))
+            throw new UnauthorizedAccessException("You dont have access to do this.");
+        
+        await using var tx = await dbContext.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            childRequest.Status           = ChildWithdrawalRequestStatus.Approved;
+            childRequest.ReviewedByUserId = currentUserService.UserId!;
+            childRequest.ReviewedAt       = DateTime.UtcNow;
+
+            await departmentAssignmentService.DeactivateActiveAssignmentAsync(childRequest.ChildId, currentUserService.UserId!, cancellationToken);
+            await parentChildService.DeactivateParentChildLinksAsync(childRequest.ChildId, currentUserService.UserId!, cancellationToken);
+            
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
+        
+        
     }
 }
