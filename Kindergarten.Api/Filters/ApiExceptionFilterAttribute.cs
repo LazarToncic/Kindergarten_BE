@@ -21,6 +21,7 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
             {typeof(EmployeeNotQualifiedException), HandleEmployeeNotQualifiedException},
             {typeof(ChildAssignemntNotActiveException), HandleChildAssignemntNotActiveException},
             {typeof(TeacherNotTeachingDepartmentException), HandleTeacherNotTeachingDepartmentException},
+            {typeof(UnableToDeleteRoleException), HandleUnableToDeleteRoleException},
         };
     }
 
@@ -90,6 +91,23 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
         context.Result = new ObjectResult(details)
         {
             StatusCode = StatusCodes.Status401Unauthorized
+        };
+        
+        context.ExceptionHandled = true;
+    }
+    
+    private void HandleUnableToDeleteRoleException(ExceptionContext context)
+    {
+        var details = new ProblemDetails
+        {
+            Status = StatusCodes.Status406NotAcceptable,
+            Title = "Unable to delete role",
+            Type = "https://tools.ietf.org/html/rfc7231#section-3.1"
+        };
+
+        context.Result = new ObjectResult(details)
+        {
+            StatusCode = StatusCodes.Status406NotAcceptable
         };
         
         context.ExceptionHandled = true;

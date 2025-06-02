@@ -7,5 +7,6 @@ public record NewChildDto(
     bool HasAllergies, 
     List<string>? Allergies,
     bool HasMedicalIssues, 
-    List<string>? MedicalConditions
+    List<string>? MedicalConditions,
+    Guid PreferredKindergartenId
     );

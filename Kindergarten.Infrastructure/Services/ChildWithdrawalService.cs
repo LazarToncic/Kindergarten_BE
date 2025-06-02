@@ -12,7 +12,8 @@ namespace Kindergarten.Infrastructure.Services;
 
 public class ChildWithdrawalService(IKindergartenDbContext dbContext ,ICurrentUserService currentUserService,
     IDepartmentEmployeeRepository departmentEmployeeRepository, ICoordinatorService coordinatorService,
-    IDepartmentAssignmentService departmentAssignmentService, IParentChildService parentChildService) : IChildWithdrawalService
+    IDepartmentAssignmentService departmentAssignmentService, IParentChildService parentChildService, IParentService parentService,
+    IChildrenService childrenService) : IChildWithdrawalService
 {
     public async Task CreateChildWithdrawalAsync(Guid childId, string? reason, CancellationToken cancellationToken)
     {
@@ -21,7 +22,7 @@ public class ChildWithdrawalService(IKindergartenDbContext dbContext ,ICurrentUs
             .FirstOrDefaultAsync(c => c.Id == childId, cancellationToken);
 
         if (child == null)
-            throw new NotFoundException($"Child {childId} not found.");
+            throw new NotFoundException($"Child {childId} not found."); 
         
         var already = await dbContext.ChildWithdrawalRequests
             .AnyAsync(r => r.ChildId == childId && r.Status == ChildWithdrawalRequestStatus.Pending, cancellationToken);
@@ -165,7 +166,15 @@ public class ChildWithdrawalService(IKindergartenDbContext dbContext ,ICurrentUs
             childRequest.ReviewedAt       = DateTime.UtcNow;
 
             await departmentAssignmentService.DeactivateActiveAssignmentAsync(childRequest.ChildId, currentUserService.UserId!, cancellationToken);
-            await parentChildService.DeactivateParentChildLinksAsync(childRequest.ChildId, currentUserService.UserId!, cancellationToken);
+            var orphanedParentIds = await parentChildService.DeactivateParentChildLinksAsync(childRequest.ChildId, currentUserService.UserId!, cancellationToken);
+
+            if (orphanedParentIds.Any())
+            {
+                await parentService.RemoveParentRoleForOrphanedAsync(orphanedParentIds, cancellationToken);
+                await parentService.DeactivateParentAsync(orphanedParentIds, currentUserService.UserId! ,cancellationToken);
+            }
+            
+            await childrenService.DeactivateChildAsync(childRequest.ChildId, currentUserService.UserId!, cancellationToken);
             
             await dbContext.SaveChangesAsync(cancellationToken);
             await tx.CommitAsync(cancellationToken);

@@ -47,6 +47,8 @@ public static class DependencyInjection
             services.AddScoped<IAllergyService, AllergyService>();
             services.AddScoped<IMedicalConditionService, MedicalConditionService>();
             services.AddScoped<IChildWithdrawalService, ChildWithdrawalService>();
+            services.AddScoped<IDepartmentAssignmentService, DepartmentAssignmentService>();
+            services.AddScoped<IParentChildService, ParentChildService>();
 
             services.AddScoped<IDepartmentEmployeeRepository, DepartmentEmployeeRepository>();
 

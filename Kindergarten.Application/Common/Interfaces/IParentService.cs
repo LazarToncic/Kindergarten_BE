@@ -9,6 +9,9 @@ public interface IParentService
     Task<GetParentRequestQueryResponseDto> GetParentRequest(GetParentRequestQueryDto dto, CancellationToken cancellationToken);
     Task ApproveParentRequestOnline(Guid parentRequestId, CancellationToken cancellationToken);
     Task ApproveParentRequestInPerson(Guid parentRequestId, CancellationToken cancellationToken);
+
+    Task RemoveParentRoleForOrphanedAsync(IEnumerable<string> orphanedParentUserIds, CancellationToken cancellationToken);
+    Task DeactivateParentAsync(IList<string> parentUserIds, string performedByUserId, CancellationToken cancellationToken);
     
     Task<Guid> GetParentIdWithUserId(string userId, CancellationToken cancellationToken);
 }

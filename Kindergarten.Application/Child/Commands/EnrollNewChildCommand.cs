@@ -14,6 +14,6 @@ public class EnrollNewChildCommandHandler(IChildrenService childrenService) : IR
     {
         await childrenService.AddNewChild(request.NewChildDto.FirstName, request.NewChildDto.LastName,
             request.NewChildDto.DateOfBirth, request.NewChildDto.HasAllergies, request.NewChildDto.Allergies,
-            request.NewChildDto.HasMedicalIssues, request.NewChildDto.MedicalConditions, request.ParentChildRelationship, cancellationToken);
+            request.NewChildDto.HasMedicalIssues, request.NewChildDto.MedicalConditions, request.ParentChildRelationship, request.NewChildDto.PreferredKindergartenId, cancellationToken);
     } 
 }

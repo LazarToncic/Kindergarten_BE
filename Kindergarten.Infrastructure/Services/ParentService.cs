@@ -5,12 +5,14 @@ using Kindergarten.Application.Common.Interfaces;
 using Kindergarten.Application.Common.Mappers.Parent;
 using Kindergarten.Domain.Entities;
 using Kindergarten.Domain.Entities.Enums;
+using Kindergarten.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kindergarten.Infrastructure.Services;
 
 public class ParentService(ICurrentUserService currentUserService, IKindergartenDbContext dbContext, 
-    ICoordinatorService coordinatorService, IKindergartenService kindergartenService, IChildrenService childrenService) : IParentService
+    ICoordinatorService coordinatorService, IKindergartenService kindergartenService, IChildrenService childrenService,
+    ApplicationUserManager userManager) : IParentService
 {
     public async Task CreateParentRequest(int numberOfChildren, string? additionalInfo, string preferredKindergarten, 
         ParentChildRelationship parentChildRelationship, List<ParentRequestChildDto> children, CancellationToken cancellationToken)
@@ -125,6 +127,40 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
         {
             await transaction.RollbackAsync(cancellationToken);
             throw;
+        }
+    }
+
+    public async Task RemoveParentRoleForOrphanedAsync(IEnumerable<string> orphanedParentUserIds, CancellationToken cancellationToken)
+    {
+        foreach (var orphanedParentUserId in orphanedParentUserIds)
+        {
+            var user = await userManager.FindByIdAsync(orphanedParentUserId);
+            if (user == null)
+                continue;
+
+            if (await userManager.IsInRoleAsync(user, RolesExtensions.Parent))
+            {
+                var result = await userManager.RemoveFromRoleAsync(user, RolesExtensions.Parent);
+                    
+                if (!result.Succeeded)
+                    throw new UnableToDeleteRoleException($"Neuspešno uklanjanje role 'Parent' za korisnika {orphanedParentUserId}: " +
+                                                          string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+        }
+    }
+
+    public async Task DeactivateParentAsync(IList<string> parentUserIds, string performedByUserId, CancellationToken cancellationToken)
+    {
+        var parents = await dbContext.Parents
+            .Where(x => parentUserIds.Contains(x.UserId))
+            .Where(x => x.IsActive)
+            .ToListAsync(cancellationToken);
+
+        foreach (var parent in parents)
+        {
+            parent.IsActive = false;
+            parent.DeletedAt = DateTime.Now;
+            parent.DeletedByUserId = performedByUserId;
         }
     }
 

@@ -61,7 +61,7 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
     }
 
     public async Task AddNewChild(string firstName, string lastName, DateOnly dateOfBirth, bool hasAllergies, List<string>? allergies,
-        bool hasMedicalIssues, List<string>? medicalConditions, ParentChildRelationship parentChildRelationship, CancellationToken cancellationToken)
+        bool hasMedicalIssues, List<string>? medicalConditions, ParentChildRelationship parentChildRelationship, Guid preferredKindergartenId, CancellationToken cancellationToken)
     {
         var userId = currentUserService.UserId;
         
@@ -72,7 +72,8 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
             {
                 FirstName = firstName,
                 LastName = lastName,
-                YearOfBirth = dateOfBirth
+                YearOfBirth = dateOfBirth,
+                RequestedKindergartenId = preferredKindergartenId
             };
             
             dbContext.Children.Add(child);
@@ -162,6 +163,20 @@ public class ChildrenService(IKindergartenDbContext dbContext, IAllergyService a
             .ToList();
 
         return new GetUnassignedChildrenListDto(list);
+    }
+
+    public async Task DeactivateChildAsync(Guid childId, string deletedByUserId ,CancellationToken cancellationToken)
+    {
+        var child = await dbContext.Children
+            .Where(x => x.Id == childId && x.IsActive)
+            .FirstOrDefaultAsync(cancellationToken);
+        
+        if (child == null)
+            throw new NotFoundException("Child not found");
+        
+        child.IsActive = false;
+        child.DeletedAt = DateTime.UtcNow;
+        child.DeletedByUserId = deletedByUserId;
     }
 
     public async Task<int> GetChildrenAge(Guid childrenId, CancellationToken cancellationToken)
