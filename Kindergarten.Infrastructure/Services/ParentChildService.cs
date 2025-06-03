@@ -10,23 +10,23 @@ public class ParentChildService(IKindergartenDbContext dbContext) : IParentChild
     {
         var links = await dbContext.ParentChildren
             .Include(x => x.Parent)
-            .Where(x => x.ChildId == childId && x.IsActive == true)
+            .Where(x => x.ChildId == childId && x.IsActive)
             .ToListAsync(ct);
 
-        var deactivatedLinkIds = new List<Guid>(); // ovde si stao
-        
+        var deactivatedLinkIds = new List<Guid>();
         foreach (var link in links)
         {
             link.IsActive = false;
             link.DeletedAt = DateTime.UtcNow;
             link.DeletedByUserId = performedByUserId;
+            deactivatedLinkIds.Add(link.Id);
         }
 
         var parentIds = links
             .Select(x => x.ParentId)
             .Distinct()
             .ToList();
-        
+
         var orphaned = new List<string>();
 
         foreach (var parentId in parentIds)
@@ -38,11 +38,15 @@ public class ParentChildService(IKindergartenDbContext dbContext) : IParentChild
 
             if (parentUserId == null)
                 throw new NotFoundException("Parent is not found");
-            
-            var hasKids = await dbContext.ParentChildren
-                .AnyAsync(pc => pc.ParentId == parentId && pc.IsActive, ct);
-            
-            if (!hasKids)
+
+            var hasOtherKids = await dbContext.ParentChildren
+                .AnyAsync(pc =>
+                        pc.ParentId == parentId &&
+                        pc.IsActive && 
+                        !deactivatedLinkIds.Contains(pc.Id)
+                    , ct);
+
+            if (!hasOtherKids)
                 orphaned.Add(parentUserId);
         }
         

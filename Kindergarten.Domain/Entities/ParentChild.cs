@@ -4,6 +4,7 @@ namespace Kindergarten.Domain.Entities;
 
 public class ParentChild
 {
+    public Guid Id { get; set; } = Guid.NewGuid();
     public Guid ParentId { get; set; }
     public Parent Parent { get; set; }
     

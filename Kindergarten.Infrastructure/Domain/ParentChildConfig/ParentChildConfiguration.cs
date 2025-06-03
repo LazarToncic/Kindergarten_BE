@@ -9,14 +9,17 @@ public class ParentChildConfiguration : IEntityTypeConfiguration<ParentChild>
     public void Configure(EntityTypeBuilder<ParentChild> builder)
     {
         builder.ToTable("ParentChild");
-        
-        builder.HasKey(x => new { x.ParentId, x.ChildId });
-        
+
+        builder.HasKey(x => x.Id);
+
+        builder.HasIndex(x => new { x.ParentId, x.ChildId })
+            .IsUnique();
+
         builder.HasOne(x => x.Parent)
             .WithMany(x => x.ParentChildren)
             .HasForeignKey(x => x.ParentId)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         builder.HasOne(x => x.Child)
             .WithMany(x => x.ParentChildren)
             .HasForeignKey(x => x.ChildId)

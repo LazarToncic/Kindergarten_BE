@@ -179,9 +179,10 @@ public class ChildWithdrawalService(IKindergartenDbContext dbContext ,ICurrentUs
             await dbContext.SaveChangesAsync(cancellationToken);
             await tx.CommitAsync(cancellationToken);
         }
-        catch
+        catch (Exception ex)
         {
             await tx.RollbackAsync(cancellationToken);
+            Console.WriteLine("Greška prilikom odobravanja povlačenja djeteta: " + ex.ToString());
             throw;
         }
         

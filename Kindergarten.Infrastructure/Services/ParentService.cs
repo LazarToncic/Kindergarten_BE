@@ -159,7 +159,7 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
         foreach (var parent in parents)
         {
             parent.IsActive = false;
-            parent.DeletedAt = DateTime.Now;
+            parent.DeletedAt = DateTime.UtcNow;
             parent.DeletedByUserId = performedByUserId;
         }
     }

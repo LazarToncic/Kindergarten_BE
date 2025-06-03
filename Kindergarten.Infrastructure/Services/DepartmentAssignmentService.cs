@@ -16,6 +16,6 @@ public class DepartmentAssignmentService(IKindergartenDbContext dbContext) : IDe
         
         assignment.IsActive = false;
         assignment.UnassignedAt = DateTime.UtcNow;
-        assignment.AssignedByUserId = performedByUserId;
+        assignment.UnassignedByUserId = performedByUserId;
     }
 }
