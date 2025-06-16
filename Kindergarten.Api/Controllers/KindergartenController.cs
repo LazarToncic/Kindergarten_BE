@@ -1,4 +1,5 @@
 using Kindergarten.Application.Kindergarten.Commands;
+using Kindergarten.Application.Kindergarten.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,5 +13,13 @@ public class KindergartenController : ApiBaseController
     {
         await Mediator.Send(command);
         return Ok();
+    }
+
+    [Authorize(Roles = "Owner,Parent,Coordinator,Manager")]
+    [HttpGet]
+    public async Task<ActionResult> GetKindergartensInf([FromQuery] GetKindergartensInfQuery query)
+    {
+        var result = await Mediator.Send(query);
+        return Ok(result);
     }
 }

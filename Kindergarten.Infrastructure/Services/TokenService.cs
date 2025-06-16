@@ -38,7 +38,7 @@ public class TokenService(IConfiguration configuration, IKindergartenDbContext d
             issuer: configuration["Jwt:Issuer"],
             audience: configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(20),
+            expires: DateTime.UtcNow.AddMinutes(10),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -104,7 +104,7 @@ public class TokenService(IConfiguration configuration, IKindergartenDbContext d
         return new LoginResponseDto
         (
             accessToken,
-            DateTime.UtcNow.AddMinutes(20),
+            DateTime.UtcNow.AddMinutes(10),
             newRefreshToken,
             DateTime.UtcNow.AddDays(7)
         );
@@ -127,6 +127,7 @@ public class TokenService(IConfiguration configuration, IKindergartenDbContext d
         }
 
         existingRefreshToken.IsRevoked = true;
+        existingRefreshToken.RevokedAt = DateTime.UtcNow;
 
         dbContext.RefreshTokens.Update(existingRefreshToken);
         await dbContext.SaveChangesAsync(new CancellationToken());

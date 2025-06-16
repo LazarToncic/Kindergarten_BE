@@ -7,6 +7,9 @@ public class RefreshToken
     public DateTime Created { get; set; } = DateTime.UtcNow;
     public DateTime? Expires { get; set; } = DateTime.UtcNow.AddDays(7);
     public bool IsRevoked { get; set; } = false; 
+    
+    public DateTime? RevokedAt { get; set; }
+    public string? RevokedByIp { get; set; }
 
     public string UserId { get; set; }
     public ApplicationUser User { get; set; }

@@ -1,3 +1,4 @@
+using Kindergarten.Application.Common.Dto.Kindergarten;
 using Kindergarten.Application.Common.Exceptions;
 using Kindergarten.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -42,5 +43,14 @@ public class KindergartenService(IKindergartenDbContext dbContext) : IKindergart
             throw new NotFoundException("Kindergarten with this Department Id doesnt exist");
 
         return kindergartenId;
+    }
+
+    public async Task<List<GetIdAndNameKindergartenDto>> GetKindergartenIdsAndNames()
+    {
+        var kindergartens = await dbContext.Kindergartens
+            .Select(x => new GetIdAndNameKindergartenDto(x.Id, x.Name))
+            .ToListAsync();
+        
+        return kindergartens;
     }
 }

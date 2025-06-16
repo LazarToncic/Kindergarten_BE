@@ -8,7 +8,7 @@ public class AuthController : ApiBaseController
 {
     [AllowAnonymous]
     [HttpPost]
-    public async Task<ActionResult> UserRegistration(UserRegistrationCommand command)
+    public async Task<ActionResult> UserRegistration([FromBody] UserRegistrationCommand command)
     {
         await Mediator.Send(command);
         return Ok();
@@ -32,7 +32,7 @@ public class AuthController : ApiBaseController
     
     [AllowAnonymous]
     [HttpPost]
-    public async Task<ActionResult> GenerateRefreshTokenAfterAccessIsExpired(RefreshTokenCommand command)
+    public async Task<ActionResult> GenerateRefreshToken([FromBody] RefreshTokenCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(result);
