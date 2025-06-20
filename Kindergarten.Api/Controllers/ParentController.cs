@@ -18,7 +18,15 @@ public class ParentController : ApiBaseController
     
     [HttpGet]
     [Authorize(Roles = "Coordinator,Owner,Manager")]
-    public async Task<ActionResult> GetParentRequests([FromQuery] GetParentRequestQuery query)
+    public async Task<ActionResult> GetParentRequests([FromQuery] GetParentRequestsQuery query)
+    {
+        var result = await Mediator.Send(query);
+        return Ok(result);
+    }
+    
+    [HttpGet]
+    [Authorize(Roles = "Coordinator,Owner,Manager")]
+    public async Task<ActionResult> GetParentRequest([FromQuery] GetParentRequestQuery query)
     {
         var result = await Mediator.Send(query);
         return Ok(result);

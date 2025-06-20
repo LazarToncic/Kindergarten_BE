@@ -3,7 +3,7 @@ using Kindergarten.Application.Common.Validators.Parent;
 
 namespace Kindergarten.Application.Parent.Queries.Validators;
 
-public class GetParentRequestQueryValidator : AbstractValidator<GetParentRequestQuery>
+public class GetParentRequestQueryValidator : AbstractValidator<GetParentRequestsQuery>
 {
     public GetParentRequestQueryValidator()
     {

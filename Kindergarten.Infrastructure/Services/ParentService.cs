@@ -24,7 +24,7 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<GetParentRequestQueryResponseDto> GetParentRequest(GetParentRequestQueryDto dto,
+    public async Task<GetParentRequestQueryResponseDto> GetParentRequests(GetParentRequestQueryDto dto,
         CancellationToken cancellationToken)
     {
         var userRoles = currentUserService.Roles!;
@@ -75,6 +75,22 @@ public class ParentService(ICurrentUserService currentUserService, IKindergarten
         var pagedRequestsDto = pagedRequests.ParentRequestToGetParentRequestQueryResponseDto();
 
         return pagedRequestsDto;
+    }
+
+    public async Task<ParentRequestSingleResponseDto> GetParentRequest(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await dbContext.ParentRequests
+            .Include(x => x.User)
+            .Include(x => x.OnlineApprovedByUser)
+            .Include(x => x.InPersonApprovedByUser)
+            .Where(x => x.Id == id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (result == null)
+            throw new NotFoundException("Parent request not found.");
+
+
+        return result.ParentRequestToParentRequestSingleResponseDto();
     }
 
     public async Task ApproveParentRequestOnline(Guid parentRequestId, CancellationToken cancellationToken)

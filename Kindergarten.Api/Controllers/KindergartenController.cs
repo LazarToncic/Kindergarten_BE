@@ -15,7 +15,7 @@ public class KindergartenController : ApiBaseController
         return Ok();
     }
 
-    [Authorize(Roles = "Owner,Parent,Coordinator,Manager")]
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult> GetKindergartensInf([FromQuery] GetKindergartensInfQuery query)
     {

@@ -4,12 +4,12 @@ using MediatR;
 
 namespace Kindergarten.Application.Parent.Queries;
 
-public record GetParentRequestQuery(GetParentRequestQueryDto Dto) : IRequest<GetParentRequestQueryResponseDto>;
+public record GetParentRequestQuery(Guid Id) : IRequest<ParentRequestSingleResponseDto>;
 
-public class GetParentRequestQueryHandler(IParentService parentService) : IRequestHandler<GetParentRequestQuery, GetParentRequestQueryResponseDto>
+public class GetParentRequestQueryHandler(IParentService parentService) : IRequestHandler<GetParentRequestQuery, ParentRequestSingleResponseDto>
 {
-    public async Task<GetParentRequestQueryResponseDto> Handle(GetParentRequestQuery request, CancellationToken cancellationToken)
+    public async Task<ParentRequestSingleResponseDto> Handle(GetParentRequestQuery request, CancellationToken cancellationToken)
     {
-        return await parentService.GetParentRequest(request.Dto, cancellationToken);
+        return await parentService.GetParentRequest(request.Id, cancellationToken);
     }
-} 
+}
